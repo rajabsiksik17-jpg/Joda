@@ -19,6 +19,8 @@ import { buildSnapshot } from "../src/lib/sections/snapshot";
 import { defaultSectionData, defaultSectionSettings } from "../src/lib/sections/registry";
 import { CEO, CLIENT_GROUPS, COMPANY, CONTACT, COOKIE_HTML, MARKETS, PARTNERS, PRIVACY_HTML, SERVICE_CATEGORIES, STATS } from "./seed-content";
 import { SERVICES } from "./seed-services";
+import { PAGE_SEO, SERVICE_SEO } from "./seed-seo";
+import { ARTICLES, BLOG_CATEGORIES } from "./seed-articles";
 
 const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: normalizeDatabaseUrl(process.env.DATABASE_URL!) }) });
 const force = process.argv.includes("--force");
@@ -36,7 +38,7 @@ async function seedRoles() {
     });
   }
   // Permissions added after first install: extend existing roles that already handle the inbox.
-  const added: [string, string][] = [["messages.view", "consultations.view"], ["messages.manage", "consultations.manage"]];
+  const added: [string, string][] = [["messages.view", "consultations.view"], ["messages.manage", "consultations.manage"], ["seo.edit", "analytics.view"], ["settings.edit", "analytics.view"]];
   for (const role of await db.role.findMany({ where: { key: { not: "super_admin" } } })) {
     const perms = new Set(role.permissions);
     for (const [has, grant] of added) if (perms.has(has)) perms.add(grant);
@@ -129,7 +131,7 @@ async function uploadSeedAsset(file: string, alt: L) {
 type SectionSeed = { type: string; data?: Record<string, unknown>; settings?: Record<string, unknown> };
 
 async function createPage(slug: string, kind: "HOME" | "STANDARD" | "LEGAL", title: L, seo: Record<string, unknown>, sections: SectionSeed[], publish = true) {
-  const page = await db.page.create({ data: { slug, kind, title, seo: seo as Prisma.InputJsonValue, status: "DRAFT" } });
+  const page = await db.page.create({ data: { slug, kind, title, seo: { ...seo, ...(PAGE_SEO[slug] ?? {}) } as Prisma.InputJsonValue, status: "DRAFT" } });
   const created = [];
   for (const [i, s] of sections.entries()) {
     created.push(
@@ -153,6 +155,8 @@ async function createPage(slug: string, kind: "HOME" | "STANDARD" | "LEGAL", tit
 }
 
 async function clearContent() {
+  await db.blogPost.deleteMany();
+  await db.blogCategory.deleteMany();
   const seedMedia = await db.media.findMany({ where: { key: { startsWith: "seed/" } }, select: { id: true, key: true } });
   for (const m of seedMedia) await deleteObject(m.key).catch(() => undefined);
   await db.media.deleteMany({ where: { id: { in: seedMedia.map((m) => m.id) } } });
@@ -211,6 +215,7 @@ async function seedContent() {
         capabilities: s.capabilities as Prisma.InputJsonValue, steps: s.steps as Prisma.InputJsonValue,
         whyItMatters: s.whyItMatters, outcomes: s.outcomes as Prisma.InputJsonValue, visual: s.visual, capabilityLayout: s.capabilityLayout,
         featured: !!s.featured, categoryId: categoryIds[s.category], status: "PUBLISHED", publishedAt: new Date(),
+        seo: (SERVICE_SEO[s.slug] ?? {}) as Prisma.InputJsonValue,
       },
     });
     serviceIds[s.slug] = created.id;
@@ -462,6 +467,85 @@ async function seedContent() {
   for (const [, data] of items) await db.menuItem.create({ data });
 }
 
+/**
+ * Additive upgrades for sites that were seeded earlier: fills SEO fields that are still empty and adds
+ * the initial articles when there are none. Never overwrites anything an editor has written.
+ */
+async function upgradeContent() {
+  let changed = 0;
+  const empty = (v: unknown) => !v || (typeof v === "object" && !Object.values(v as Record<string, string>).some(Boolean));
+
+  for (const s of await db.service.findMany({ where: { deletedAt: null } })) {
+    const add = SERVICE_SEO[s.slug];
+    if (!add) continue;
+    const cur = (s.seo ?? {}) as Record<string, unknown>;
+    const next = { ...cur };
+    for (const [k, v] of Object.entries(add)) if (empty(cur[k])) next[k] = v;
+    if (JSON.stringify(next) !== JSON.stringify(cur)) {
+      await db.service.update({ where: { id: s.id }, data: { seo: next as Prisma.InputJsonValue } });
+      changed++;
+    }
+  }
+
+  for (const p of await db.page.findMany({ where: { deletedAt: null } })) {
+    const add = PAGE_SEO[p.slug];
+    if (!add) continue;
+    const merge = (cur: Record<string, unknown>) => {
+      const next = { ...cur };
+      for (const [k, v] of Object.entries(add)) if (empty(cur[k])) next[k] = v;
+      return next;
+    };
+    const cur = (p.seo ?? {}) as Record<string, unknown>;
+    const next = merge(cur);
+    const snap = p.publishedSnapshot as { seo?: Record<string, unknown> } | null;
+    const nextSnap = snap ? { ...snap, seo: merge(snap.seo ?? {}) } : null;
+    if (JSON.stringify(next) !== JSON.stringify(cur) || (snap && JSON.stringify(nextSnap) !== JSON.stringify(snap))) {
+      await db.page.update({ where: { id: p.id }, data: { seo: next as Prisma.InputJsonValue, ...(nextSnap ? { publishedSnapshot: nextSnap as Prisma.InputJsonValue } : {}) } });
+      changed++;
+    }
+  }
+
+  if ((await db.blogPost.count()) === 0) {
+    await seedArticles();
+    changed++;
+    console.log(`  ${ARTICLES.length} initial articles added.`);
+  }
+  return changed;
+}
+
+async function seedArticles() {
+  const categoryIds: Record<string, string> = {};
+  for (const [i, c] of BLOG_CATEGORIES.entries()) {
+    const cat = await db.blogCategory.upsert({ where: { slug: c.slug }, create: { slug: c.slug, name: c.name, order: i }, update: {} });
+    categoryIds[c.slug] = cat.id;
+  }
+  const services = await db.service.findMany({ where: { deletedAt: null }, select: { id: true, slug: true } });
+  for (const a of ARTICLES) {
+    const cover = await uploadSeedAsset(a.cover, a.coverAlt);
+    await db.blogPost.create({
+      data: {
+        slug: a.slug,
+        title: a.title,
+        excerpt: a.excerpt,
+        content: a.content,
+        coverId: cover.id,
+        categoryId: categoryIds[a.category],
+        tags: a.tags,
+        status: "PUBLISHED",
+        publishedAt: new Date(Date.now() - a.daysAgo * 86_400_000),
+        featured: !!a.featured,
+        seo: { title: a.seo.title, description: a.seo.description } as Prisma.InputJsonValue,
+        services: { connect: services.filter((s) => a.services.includes(s.slug)).map((s) => ({ id: s.id })) },
+      },
+    });
+  }
+}
+
+async function dropContentCache() {
+  // Cached content (unstable_cache) lives on disk; drop it so a running server does not serve the old content.
+  for (const dir of [".next/cache/fetch-cache", ".next/dev/cache/fetch-cache"]) await rm(path.join(process.cwd(), dir), { recursive: true, force: true });
+}
+
 async function main() {
   await seedRoles();
   await seedSettings();
@@ -469,11 +553,13 @@ async function main() {
   const hasContent = (await db.page.count()) > 0;
   if (!hasContent || force) {
     await seedContent();
-    // Cached content (unstable_cache) lives on disk; drop it so a running server does not serve the old content.
-    for (const dir of [".next/cache/fetch-cache", ".next/dev/cache/fetch-cache"]) await rm(path.join(process.cwd(), dir), { recursive: true, force: true });
+    await seedArticles();
+    await dropContentCache();
     console.log("  Content seeded from the official company profile.");
   } else {
-    console.log("  Content already present — skipped (use --force to recreate).");
+    const changed = await upgradeContent();
+    if (changed) await dropContentCache();
+    console.log(changed ? `  Existing content kept; ${changed} item(s) completed (SEO / initial articles).` : "  Content already present — nothing to add.");
   }
 }
 

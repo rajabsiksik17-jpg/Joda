@@ -24,13 +24,13 @@ export default async function PostEditPage({ params }: { params: Promise<{ id: s
         canPublish={canPublish}
         title={locale === "ar" ? "مقال جديد" : "New insight"}
         env={env}
-        initial={{ title: empty, excerpt: empty, content: empty, status: "DRAFT", publishedAt: null, slug: "", coverId: null, categoryId: null, tags: [], authorName: "", featured: false, seoTitle: empty, seoDescription: empty, ogImageId: null }}
+        initial={{ title: empty, excerpt: empty, content: empty, status: "DRAFT", publishedAt: null, slug: "", coverId: null, categoryId: null, tags: [], relatedServiceIds: [], authorName: "", featured: false, seoTitle: empty, seoDescription: empty, ogTitle: empty, ogDescription: empty, ogImageId: null, noindex: false }}
       />
     );
   }
-  const p = await db.blogPost.findFirst({ where: { id, deletedAt: null } });
+  const p = await db.blogPost.findFirst({ where: { id, deletedAt: null }, include: { services: { select: { id: true } } } });
   if (!p) notFound();
-  const seo = (p.seo as { title?: L; description?: L; ogImageId?: string | null }) ?? {};
+  const seo = (p.seo as { title?: L; description?: L; ogTitle?: L; ogDescription?: L; ogImageId?: string | null; noindex?: boolean }) ?? {};
   const live = p.status === "PUBLISHED" && !!p.publishedAt && p.publishedAt <= new Date();
   return (
     <PostEditorClient
@@ -50,11 +50,15 @@ export default async function PostEditPage({ params }: { params: Promise<{ id: s
         coverId: p.coverId,
         categoryId: p.categoryId,
         tags: p.tags,
+        relatedServiceIds: p.services.map((s) => s.id),
         authorName: p.authorName ?? "",
         featured: p.featured,
         seoTitle: seo.title ?? empty,
         seoDescription: seo.description ?? empty,
+        ogTitle: seo.ogTitle ?? empty,
+        ogDescription: seo.ogDescription ?? empty,
         ogImageId: seo.ogImageId ?? null,
+        noindex: !!seo.noindex,
       }}
     />
   );

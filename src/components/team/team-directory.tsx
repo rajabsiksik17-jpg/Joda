@@ -122,9 +122,9 @@ function SoloCard({ person, locale, labels, onOpen, dark }: { person: TeamPerson
   return (
     <div className={cn("group grid overflow-hidden border md:grid-cols-12", dark ? "border-white/15 bg-white/5" : "border-line bg-white shadow-soft")} data-reveal>
       <div className="md:col-span-5" data-reveal="clip">
-        <Portrait person={person} locale={locale} sizes="(min-width:768px) 40vw, 100vw" className="aspect-[4/5] h-full md:aspect-auto md:min-h-96" />
+        <Portrait person={person} locale={locale} sizes="(min-width:768px) 40vw, 100vw" className="aspect-[5/4] h-full sm:aspect-[4/5] md:aspect-auto md:min-h-96" />
       </div>
-      <div className="flex flex-col justify-center gap-4 p-8 md:col-span-7 lg:p-12">
+      <div className="flex flex-col justify-center gap-3 p-6 sm:gap-4 sm:p-8 md:col-span-7 lg:p-12">
         {person.department && <p className="eyebrow">{person.department}</p>}
         <h3 className={cn("display t-title", dark ? "text-white" : "text-ink")}>{person.name}</h3>
         <p className={dark ? "text-white/75" : "text-muted"}>

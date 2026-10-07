@@ -307,7 +307,7 @@ export const SERVICES: SeedService[] = [
     ),
     whyItMatters: l(
       "Technology delivers when it is planned, governed and secured as one system. Recognised frameworks — COBIT and ITIL for maturity, ISO/IEC 20000 for service management, ISO/IEC 27001 for information security, PMI and Agile for delivery — give that system a proven backbone, while continuity planning and team capability keep it resilient.",
-      "تحقق التكنولوجيا أثرها عندما تُخطَّط وتُحكم وتُؤمَّن كمنظومة واحدة. وتمنح الأطر المعتمدة — COBIT وITIL لتقييم النضج، وISO/IEC 20000 لإدارة الخدمات، وISO/IEC 27001 لأمن المعلومات، وPMI وAgile لإدارة المشاريع — هذه المنظومة عموداً فقرياً مجرباً، بينما يحافظ تخطيط الاستمرارية وبناء قدرات الفريق على صمودها.",
+      "تحقق التكنولوجيا أثرها عندما تُخطَّط وتُحكم وتُؤمَّن كمنظومة واحدة. وتمنح الأطر المعتمدة — COBIT و ITIL لتقييم النضج، و ISO/IEC 20000 لإدارة الخدمات، و ISO/IEC 27001 لأمن المعلومات، و PMI و Agile لإدارة المشاريع — هذه المنظومة عموداً فقرياً مجرباً، بينما يحافظ تخطيط الاستمرارية وبناء قدرات الفريق على صمودها.",
     ),
     outcomes: [
       { icon: "gauge", title: l("Faster, more effective performance", "أداء أسرع وأكثر فعالية"), text: l("The right technology adopted for the institution's needs.", "تبني التكنولوجيا المناسبة لاحتياجات المؤسسة.") },
@@ -339,7 +339,7 @@ export const SERVICES: SeedService[] = [
         items: items([
           ["Information security frameworks (ISO/IEC 27001)", "أطر أمن المعلومات (ISO/IEC 27001)"],
           ["Cybersecurity and regulatory compliance", "الأمن السيبراني والامتثال التنظيمي"],
-          ["Business continuity and disaster recovery planning (BCP and DRP)", "التخطيط لاستمرارية الأعمال والتعافي من الكوارث (BCP وDRP)"],
+          ["Business continuity and disaster recovery planning (BCP and DRP)", "التخطيط لاستمرارية الأعمال والتعافي من الكوارث (BCP و DRP)"],
         ]),
       },
       {
@@ -348,7 +348,7 @@ export const SERVICES: SeedService[] = [
       },
     ],
     steps: [
-      { title: l("Assess", "التقييم"), text: l("Infrastructure maturity against COBIT and ITIL.", "نضج البنية التحتية وفق COBIT وITIL.") },
+      { title: l("Assess", "التقييم"), text: l("Infrastructure maturity against COBIT and ITIL.", "نضج البنية التحتية وفق COBIT و ITIL.") },
       { title: l("Plan", "التخطيط"), text: l("Transformation plan, roadmap and feasibility.", "خطة التحول وخارطة الطريق ودراسات الجدوى.") },
       { title: l("Implement & govern", "التنفيذ والحوكمة"), text: l("Systems, policies, service management and projects.", "الأنظمة والسياسات وإدارة الخدمات والمشاريع.") },
       { title: l("Secure & sustain", "التأمين والاستدامة"), text: l("Security, continuity, KPIs and team capability.", "الأمن والاستمرارية والمؤشرات وقدرات الفريق.") },

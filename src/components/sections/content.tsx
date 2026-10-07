@@ -69,7 +69,7 @@ export async function TextMediaSection({ data, settings, ctx }: SectionProps<Tex
           )}
         </div>
         {hasVisual && (
-          <div className={cn("relative lg:col-span-6", start && "lg:order-1")} data-reveal="scale">
+          <div className={cn("relative lg:col-span-6", start && "lg:order-1", visual === "image" ? "max-lg:order-first" : "max-md:hidden")} data-reveal="scale">
             {visual === "image" && image ? (
               <div className="relative">
                 <div className="absolute -inset-3 translate-x-6 translate-y-6 border border-tech/40 rtl:-translate-x-6" aria-hidden />
@@ -147,11 +147,13 @@ export function CardsSection({ data, settings, ctx }: SectionProps<CardsData>) {
   if (!items.length) return null;
   const cols = { "2": "md:grid-cols-2", "3": "md:grid-cols-2 lg:grid-cols-3", "4": "md:grid-cols-2 lg:grid-cols-4" }[data.columns ?? "3"] ?? "lg:grid-cols-3";
   const dark = settings.theme === "navy";
+  // Short cards (values, pillars) pair up on phones instead of stacking into a long column.
+  const compact = items.length > 2 && items.every((i) => tr(i.text, locale).length <= 90 && !i.link?.href);
   return (
     <SectionShell settings={settings}>
       <div className="container-qe">
         <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} />
-        <div className={cn("mt-14 grid gap-px", cols, data.style === "outline" ? (dark ? "bg-white/10" : "bg-line") : "gap-5 bg-transparent")}>
+        <div className={cn("mt-9 lg:mt-14 grid gap-px", compact && "max-md:grid-cols-2 max-md:gap-3", cols, data.style === "outline" ? (dark ? "bg-white/10" : "bg-line") : "gap-5 bg-transparent")}>
           {items.map((item, i) => {
             const href = item.link?.href;
             const inner = (
@@ -161,11 +163,11 @@ export function CardsSection({ data, settings, ctx }: SectionProps<CardsData>) {
                     <span className="absolute inset-x-0 top-0 h-0.5 scale-x-0 bg-tech-600 transition-transform duration-500 group-hover:scale-x-100 rtl:origin-right ltr:origin-left" aria-hidden />
                     <span className="flex items-start justify-between gap-4">
                       {item.icon ? (
-                        <span className={cn("grid size-12 place-items-center rounded-full transition-colors duration-300", dark ? "bg-white/10 text-sky" : "bg-sky-50 text-tech-600 group-hover:bg-tech-600 group-hover:text-white")}>
+                        <span className={cn("grid size-10 place-items-center rounded-full transition-colors duration-300 sm:size-12", dark ? "bg-white/10 text-sky" : "bg-sky-50 text-tech-600 group-hover:bg-tech-600 group-hover:text-white")}>
                           <Icon name={item.icon} className="size-5" />
                         </span>
                       ) : <span />}
-                      <span className={cn("display text-4xl leading-none", dark ? "text-white/25" : "text-navy/15")} dir="ltr">{String(i + 1).padStart(2, "0")}</span>
+                      <span className={cn("display text-2xl leading-none sm:text-4xl", dark ? "text-white/25" : "text-navy/15")} dir="ltr">{String(i + 1).padStart(2, "0")}</span>
                     </span>
                   </>
                 ) : (
@@ -173,8 +175,8 @@ export function CardsSection({ data, settings, ctx }: SectionProps<CardsData>) {
                     <Icon name={item.icon} className="size-6" />
                   </span>
                 )}
-                <h3 className="heading mt-6 text-xl">{tr(item.title, locale)}</h3>
-                {tr(item.text, locale) && <p className={cn("mt-3 leading-relaxed", dark ? "text-white/70" : "text-body")}>{tr(item.text, locale)}</p>}
+                <h3 className={cn("heading t-card", compact ? "mt-4 sm:mt-6" : "mt-6")}>{tr(item.title, locale)}</h3>
+                {tr(item.text, locale) && <p className={cn("leading-relaxed", compact ? "mt-1.5 text-sm sm:mt-3 sm:text-base" : "mt-3", dark ? "text-white/70" : "text-body")}>{tr(item.text, locale)}</p>}
                 {href && tr(item.link?.label, locale) && (
                   <span className="mt-6 inline-flex items-center gap-2 font-semibold text-tech-600">
                     {tr(item.link?.label, locale)}
@@ -184,7 +186,8 @@ export function CardsSection({ data, settings, ctx }: SectionProps<CardsData>) {
               </>
             );
             const cls = cn(
-              "group relative flex flex-col p-8 transition-all lg:p-10",
+              "group relative flex flex-col transition-all",
+              compact ? "p-4 sm:p-8 lg:p-10" : "p-6 sm:p-8 lg:p-10",
               data.style === "filled"
                 ? dark ? "bg-white/5 hover:bg-white/10" : "bg-surface hover:bg-surface-2"
                 : data.style === "numbered"
@@ -246,17 +249,17 @@ export function ProcessSection({ data, settings, ctx }: SectionProps<ProcessData
       {dark && <div className="grid-texture-dark pointer-events-none absolute inset-0 opacity-50" />}
       <div className="container-qe relative">
         <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} />
-        <ol className={cn("mt-16 grid gap-px sm:grid-cols-2", steps.length >= 4 ? "lg:grid-cols-4" : "lg:grid-cols-3", dark ? "bg-white/10" : "bg-line")}>
+        <ol className={cn("mt-10 lg:mt-16 grid gap-px sm:grid-cols-2", steps.length >= 4 ? "lg:grid-cols-4" : "lg:grid-cols-3", dark ? "bg-white/10" : "bg-line")}>
           {steps.map((s, i) => (
-            <li key={i} className={cn("group relative flex flex-col p-8 lg:p-9", dark ? "bg-navy" : "bg-white")} data-reveal style={{ "--reveal-delay": `${i * 90}ms` } as React.CSSProperties}>
-              <div className="flex items-center gap-4">
-                <span className="grid size-12 shrink-0 place-items-center rounded-full bg-tech-600 text-lg font-bold text-white transition-transform duration-500 group-hover:scale-110" dir="ltr">
+            <li key={i} className={cn("group relative grid grid-cols-[auto_1fr] gap-x-4 p-5 sm:flex sm:flex-col sm:p-8 lg:p-9", dark ? "bg-navy" : "bg-white")} data-reveal style={{ "--reveal-delay": `${i * 90}ms` } as React.CSSProperties}>
+              <div className="row-span-2 flex items-center gap-4 self-start">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-tech-600 font-bold text-white transition-transform duration-500 group-hover:scale-110 sm:size-12 sm:text-lg" dir="ltr">
                   {s.marker || i + 1}
                 </span>
                 {i < steps.length - 1 && <span className={cn("hidden h-px flex-1 lg:block", dark ? "bg-gradient-to-r from-sky/60 to-transparent rtl:bg-gradient-to-l" : "bg-gradient-to-r from-tech/50 to-transparent rtl:bg-gradient-to-l")} aria-hidden />}
               </div>
-              <h3 className="heading mt-7 text-xl">{tr(s.title, locale)}</h3>
-              {tr(s.text, locale) && <p className={cn("mt-3 leading-relaxed", dark ? "text-white/70" : "text-body")}>{tr(s.text, locale)}</p>}
+              <h3 className="heading t-card self-center sm:mt-7">{tr(s.title, locale)}</h3>
+              {tr(s.text, locale) && <p className={cn("mt-1.5 text-[0.95rem] leading-relaxed sm:mt-3 sm:text-base", dark ? "text-white/70" : "text-body")}>{tr(s.text, locale)}</p>}
             </li>
           ))}
         </ol>

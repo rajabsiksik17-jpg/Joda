@@ -147,4 +147,23 @@ test.describe("public website", () => {
     await expect(page).toHaveURL(/\/en\/insights/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
+
+  test("articles link to services and expose BlogPosting structured data", async ({ page, request }) => {
+    await page.goto("/en/insights/governance-beyond-compliance");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Governance beyond compliance");
+    await expect(page.getByRole("heading", { name: "Services related to this article" })).toBeVisible();
+    await expect(page.locator("article").getByRole("link", { name: /Request a consultation/ })).toHaveAttribute("href", /\/en\/consultation\?service=governance/);
+    const ld = await page.locator('script[type="application/ld+json"]').allTextContents();
+    expect(ld.some((t) => t.includes('"BlogPosting"'))).toBe(true);
+    const head = await page.locator('link[rel="alternate"][hreflang="ar"]').getAttribute("href");
+    expect(head).toContain("/ar/insights/governance-beyond-compliance");
+    const sitemap = await (await request.get("/sitemap.xml")).text();
+    expect(sitemap).toContain("/insights/governance-beyond-compliance");
+  });
+
+  test("service pages have unique SEO titles and link to related insights", async ({ page }) => {
+    await page.goto("/en/services/iso-consulting");
+    await expect(page).toHaveTitle(/ISO Certification Consulting/);
+    await expect(page.getByRole("heading", { name: "Related insights" })).toBeVisible();
+  });
 });

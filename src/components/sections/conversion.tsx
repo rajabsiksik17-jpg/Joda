@@ -129,7 +129,7 @@ export async function ContactSection({ data, settings, ctx }: SectionProps<Conta
   return (
     <SectionShell settings={settings}>
       <div className="container-qe">
-        <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-14" />
+        <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-9 lg:mb-14" />
         <div className={cn("grid gap-12 lg:gap-16", data.showForm && data.showChannels && "lg:grid-cols-12")}>
           {data.showChannels && (
             <aside className={cn(data.showForm && "lg:col-span-4")} data-reveal>
@@ -188,7 +188,7 @@ export async function ContactSection({ data, settings, ctx }: SectionProps<Conta
             </aside>
           )}
           {data.showForm && (
-            <div className={cn("border border-line bg-white p-6 shadow-soft sm:p-10", data.showChannels && "lg:col-span-8")} data-reveal>
+            <div className={cn("border border-line bg-white p-5 shadow-soft sm:p-10", data.showChannels && "lg:col-span-8")} data-reveal>
               <ContactForm
                 locale={locale}
                 token={issueFormToken()}
@@ -201,7 +201,7 @@ export async function ContactSection({ data, settings, ctx }: SectionProps<Conta
           )}
         </div>
         {map && (
-          <div className="mt-16" data-reveal>
+          <div className="mt-10 lg:mt-16" data-reveal>
             <MapEmbed {...map} />
           </div>
         )}
@@ -234,7 +234,7 @@ export async function ConsultationSection({ data, settings, ctx }: SectionProps<
   return (
     <SectionShell settings={settings}>
       <div className="container-qe">
-        {(tr(data.eyebrow, locale) || tr(data.title, locale)) && <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-12" />}
+        {(tr(data.eyebrow, locale) || tr(data.title, locale)) && <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-8 lg:mb-12" />}
         <div className="grid gap-8 lg:grid-cols-12 lg:gap-10">
           <div className="border border-line bg-white p-5 shadow-soft sm:p-10 lg:col-span-8" data-reveal>
             <ConsultationForm
@@ -253,7 +253,7 @@ export async function ConsultationSection({ data, settings, ctx }: SectionProps<
             />
           </div>
           {(steps.length > 0 || channels.length > 0) && (
-            <aside className="relative overflow-hidden bg-navy p-8 text-white sm:p-10 lg:col-span-4" data-reveal>
+            <aside className="relative overflow-hidden bg-navy p-6 text-white sm:p-10 lg:col-span-4" data-reveal>
               <div className="grid-texture-dark absolute inset-0 opacity-50" aria-hidden />
               <div className="relative">
                 {tr(data.asideTitle, locale) && <h2 className="heading text-xl text-white">{tr(data.asideTitle, locale)}</h2>}
@@ -310,14 +310,17 @@ export async function ContactCardsSection({ data, settings, ctx }: SectionProps<
   const showSocial = data.showSocial !== false && chrome.socials.length > 0;
   if (!cards.length && !address && !hours && !showSocial && !hasCta) return null;
 
-  const tile = "h-full border border-line bg-white p-6";
-  const iconBox = "grid size-12 place-items-center rounded-sm bg-sky-50 text-tech-600 transition-colors duration-300";
+  // Phones: compact icon + text rows. Larger screens: tall cards.
+  const tile = "flex h-full items-center gap-4 border border-line bg-white p-4 sm:block sm:p-6";
+  const iconBox = "grid size-11 shrink-0 place-items-center rounded-sm bg-sky-50 text-tech-600 transition-colors duration-300 sm:size-12";
+  const labelCls = "block text-xs text-muted sm:mt-8 sm:text-sm";
+  const valueCls = "mt-0.5 block font-semibold break-words text-ink sm:mt-1 sm:text-lg";
 
   return (
     <SectionShell settings={settings}>
       <div className="container-qe">
-        {(tr(data.eyebrow, locale) || tr(data.title, locale)) && <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-12" />}
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {(tr(data.eyebrow, locale) || tr(data.title, locale)) && <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-8 lg:mb-12" />}
+        <ul className="grid gap-2.5 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           {cards.map((c, i) => {
             const IconCmp = CHANNEL_ICON[c.type as keyof typeof CHANNEL_ICON] ?? ArrowRight;
             const href = channelHref(c.type, c.value, c.href);
@@ -325,15 +328,17 @@ export async function ContactCardsSection({ data, settings, ctx }: SectionProps<
             const inner = (
               <>
                 <span className={cn(iconBox, "group-hover:bg-tech-600 group-hover:text-white")}><IconCmp className="size-5" aria-hidden /></span>
-                <span className="mt-8 block text-sm text-muted">{tr(c.label, locale) || typeLabel[c.type]}</span>
-                <span className="mt-1 block text-lg font-semibold break-words text-ink" dir={ltr ? "ltr" : undefined}>{c.value}</span>
-                {href && <ArrowRight className="absolute end-6 top-7 size-4 text-muted transition-all duration-300 group-hover:text-tech-600 rtl:-scale-x-100" aria-hidden />}
+                <span className="min-w-0 flex-1">
+                  <span className={labelCls}>{tr(c.label, locale) || typeLabel[c.type]}</span>
+                  <span className={valueCls}><span dir={ltr ? "ltr" : undefined}>{c.value}</span></span>
+                </span>
+                {href && <ArrowRight className="size-4 shrink-0 text-muted transition-all duration-300 group-hover:text-tech-600 sm:absolute sm:end-6 sm:top-7 rtl:-scale-x-100" aria-hidden />}
               </>
             );
             return (
               <li key={c.id} data-reveal style={{ "--reveal-delay": `${i * 70}ms` } as React.CSSProperties}>
                 {href ? (
-                  <a href={href} target={c.type === "WHATSAPP" ? "_blank" : undefined} rel="noopener noreferrer" className={cn(tile, "group relative block transition-all duration-300 hover:-translate-y-1 hover:border-tech-600/50 hover:shadow-lift")}>{inner}</a>
+                  <a href={href} target={c.type === "WHATSAPP" ? "_blank" : undefined} rel="noopener noreferrer" className={cn(tile, "group relative transition-all duration-300 hover:-translate-y-1 hover:border-tech-600/50 hover:shadow-lift")}>{inner}</a>
                 ) : (
                   <div className={cn(tile, "group relative")}>{inner}</div>
                 )}
@@ -344,8 +349,10 @@ export async function ContactCardsSection({ data, settings, ctx }: SectionProps<
             <li data-reveal>
               <div className={tile}>
                 <span className={iconBox}><MapPin className="size-5" aria-hidden /></span>
-                <span className="mt-8 block text-sm text-muted">{dict.address}</span>
-                <span className="mt-1 block text-lg font-semibold text-ink">{address}</span>
+                <span className="min-w-0 flex-1">
+                  <span className={labelCls}>{dict.address}</span>
+                  <span className={valueCls}>{address}</span>
+                </span>
               </div>
             </li>
           )}
@@ -353,22 +360,24 @@ export async function ContactCardsSection({ data, settings, ctx }: SectionProps<
             <li data-reveal>
               <div className={tile}>
                 <span className={iconBox}><Clock className="size-5" aria-hidden /></span>
-                <span className="mt-8 block text-sm text-muted">{dict.workingHours}</span>
-                <span className="mt-1 block font-semibold whitespace-pre-line text-ink">{hours}</span>
+                <span className="min-w-0 flex-1">
+                  <span className={labelCls}>{dict.workingHours}</span>
+                  <span className={cn(valueCls, "whitespace-pre-line sm:text-base")}>{hours}</span>
+                </span>
               </div>
             </li>
           )}
         </ul>
 
         {(showSocial || hasCta) && (
-          <div className="mt-4 grid gap-4 lg:grid-cols-12">
+          <div className="mt-2.5 grid gap-2.5 sm:mt-4 sm:gap-4 lg:grid-cols-12">
             {showSocial && (
-              <div className={cn("flex flex-col justify-between gap-6 border border-line bg-surface p-8", hasCta ? "lg:col-span-5" : "lg:col-span-12")} data-reveal>
-                <p className="heading text-xl text-ink">{tr(data.socialTitle, locale) || dict.followUs}</p>
+              <div className={cn("flex flex-col justify-between gap-4 border border-line bg-surface p-5 sm:gap-6 sm:p-8", hasCta ? "lg:col-span-5" : "lg:col-span-12")} data-reveal>
+                <p className="heading t-card text-ink">{tr(data.socialTitle, locale) || dict.followUs}</p>
                 <ul className="flex flex-wrap gap-3">
                   {chrome.socials.map((s) => (
                     <li key={s.id}>
-                      <a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.label || s.platform} className="grid size-14 place-items-center rounded-full border border-line-strong bg-white text-ink transition-all duration-300 hover:-translate-y-0.5 hover:border-navy hover:bg-navy hover:text-white">
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.label || s.platform} className="grid size-12 place-items-center rounded-full border border-line-strong bg-white text-ink transition-all duration-300 hover:-translate-y-0.5 hover:border-navy hover:bg-navy hover:text-white sm:size-14">
                         <SocialIcon platform={s.platform} className="size-5" />
                       </a>
                     </li>
@@ -377,9 +386,9 @@ export async function ContactCardsSection({ data, settings, ctx }: SectionProps<
               </div>
             )}
             {hasCta && (
-              <div className={cn("relative overflow-hidden bg-navy p-8 text-white sm:p-10", showSocial ? "lg:col-span-7" : "lg:col-span-12")} data-reveal>
+              <div className={cn("relative overflow-hidden bg-navy p-6 text-white sm:p-10", showSocial ? "lg:col-span-7" : "lg:col-span-12")} data-reveal>
                 <div className="grid-texture-dark absolute inset-0 opacity-50" aria-hidden />
-                <div className="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+                <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                   <div className="max-w-xl">
                     <p className="heading t-card text-white">{tr(data.ctaTitle, locale)}</p>
                     {tr(data.ctaText, locale) && <p className="mt-3 text-white/75">{tr(data.ctaText, locale)}</p>}

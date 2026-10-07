@@ -187,7 +187,7 @@ export function MediaBrowser({ mode, accept = "all", onPick, canManage = true, i
         <EmptyState
           icon={<ImageUp className="size-5" />}
           title={q ? tx("No files match your search", "لا توجد ملفات مطابقة") : tx("Your media library is empty", "مكتبة الوسائط فارغة")}
-          text={canManage ? tx("Upload images (JPG, PNG, WebP, AVIF, SVG) or videos (MP4, WebM). Images are optimized automatically.", "ارفع صوراً (JPG وPNG وWebP وAVIF وSVG) أو فيديو (MP4 وWebM). يتم تحسين الصور تلقائياً.") : undefined}
+          text={canManage ? tx("Upload images (JPG, PNG, WebP, AVIF, SVG) or videos (MP4, WebM). Images are optimized automatically.", "ارفع صوراً (JPG و PNG و WebP و AVIF و SVG) أو فيديو (MP4 و WebM). يتم تحسين الصور تلقائياً.") : undefined}
           action={canManage ? <Button variant="primary" onClick={() => fileRef.current?.click()}><ImageUp className="size-4" />{tx("Upload files", "رفع ملفات")}</Button> : undefined}
         />
       ) : (

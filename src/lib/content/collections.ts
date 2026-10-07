@@ -24,7 +24,7 @@ export type ServiceView = {
   outcomes: ServiceOutcome[];
   visual: string;
   capabilityLayout: string;
-  seo: { title?: L; description?: L; ogImageId?: string | null } | null;
+  seo: { title?: L; description?: L; ogTitle?: L; ogDescription?: L; ogImageId?: string | null; noindex?: boolean } | null;
   featured: boolean;
   category: { id: string; slug: string; name: L } | null;
   relatedIds: string[];

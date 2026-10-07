@@ -95,27 +95,27 @@ export async function ServicesSection({ data, settings, ctx }: SectionProps<Serv
   return (
     <SectionShell settings={settings}>
       <div className="container-qe">
-        {(data.eyebrow || data.title || data.text) && <div className="mb-16">{header}</div>}
-        <div className="space-y-16 lg:space-y-20">
+        {(data.eyebrow || data.title || data.text) && <div className="mb-10 lg:mb-16">{header}</div>}
+        <div className="space-y-10 lg:space-y-20">
           {groups.map((g) => (
-            <div key={g.id} className="grid gap-8 lg:grid-cols-12">
+            <div key={g.id} className="grid gap-5 lg:grid-cols-12 lg:gap-8">
               <div className="lg:col-span-3">
                 <h2 className="heading border-t-2 border-tech pt-5 text-lg text-ink lg:sticky lg:top-28" data-reveal>{g.name}</h2>
               </div>
-              <ul className="grid gap-5 sm:grid-cols-2 lg:col-span-9">
+              <ul className="grid gap-3 sm:grid-cols-2 sm:gap-5 lg:col-span-9">
                 {g.services.map((s, i) => (
                   <li key={s.id} data-reveal style={{ "--reveal-delay": `${(i % 2) * 80}ms` } as React.CSSProperties}>
-                    <Link href={href(s.slug)} className="group relative flex h-full flex-col overflow-hidden border border-line bg-white p-8 transition-[border-color,box-shadow] duration-500 hover:border-tech/60 hover:shadow-lift">
+                    <Link href={href(s.slug)} className="group relative grid h-full grid-cols-[auto_1fr] gap-x-4 overflow-hidden border border-line bg-white p-5 transition-[border-color,box-shadow] duration-500 hover:border-tech/60 hover:shadow-lift sm:flex sm:flex-col sm:p-8">
                       <span className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-tech-600 transition-transform duration-500 group-hover:scale-x-100 rtl:origin-right" aria-hidden />
-                      <div className="flex items-start justify-between">
-                        <span className="grid size-14 place-items-center rounded-sm bg-sky-50 text-tech-600 transition-colors duration-500 group-hover:bg-navy group-hover:text-sky">
-                          <Icon name={s.icon} className="size-7" strokeWidth={1.6} />
+                      <div className="row-span-3 flex items-start justify-between">
+                        <span className="grid size-11 place-items-center rounded-sm bg-sky-50 text-tech-600 transition-colors duration-500 group-hover:bg-navy group-hover:text-sky sm:size-14">
+                          <Icon name={s.icon} className="size-5 sm:size-7" strokeWidth={1.6} />
                         </span>
-                        <span className="font-mono text-sm text-mist" dir="ltr">{numberOf(s.id)}</span>
+                        <span className="hidden font-mono text-sm text-mist sm:inline" dir="ltr">{numberOf(s.id)}</span>
                       </div>
-                      <h3 className="heading mt-7 text-2xl text-ink">{tr(s.title, locale)}</h3>
-                      <p className="mt-3 flex-1 leading-relaxed text-body">{tr(s.summary, locale)}</p>
-                      <span className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-tech-600">
+                      <h3 className="heading t-sub text-ink sm:mt-7">{tr(s.title, locale)}</h3>
+                      <p className="mt-1.5 flex-1 text-[0.95rem] leading-relaxed text-body sm:mt-3 sm:text-base">{tr(s.summary, locale)}</p>
+                      <span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-tech-600 sm:mt-7">
                         {dict.exploreService}
                         <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1" aria-hidden />
                       </span>
@@ -151,7 +151,7 @@ export async function ClientsSection({ data, settings, ctx }: SectionProps<{ eye
   return (
     <SectionShell settings={settings}>
       <div className="container-qe">
-        <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-12" />
+        <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-8 lg:mb-12" />
         <div data-reveal>
           <ClientTabs groups={views} layout={data.layout === "wall" ? "wall" : "tabs"} />
         </div>
@@ -170,7 +170,7 @@ export async function TestimonialsSection({ data, settings, ctx }: SectionProps<
     <SectionShell settings={settings}>
       <div className="container-qe">
         <SectionHeading eyebrow={data.eyebrow} title={data.title} locale={locale} />
-        <ul className={cn("mt-14 grid gap-6", items.length > 1 && "md:grid-cols-2", items.length > 2 && "lg:grid-cols-3")}>
+        <ul className={cn("mt-9 lg:mt-14 grid gap-6", items.length > 1 && "md:grid-cols-2", items.length > 2 && "lg:grid-cols-3")}>
           {items.map((t, i) => (
             <li key={t.id} data-reveal style={{ "--reveal-delay": `${(i % 3) * 80}ms` } as React.CSSProperties}>
               <figure className="flex h-full flex-col border border-line bg-white p-8">
@@ -208,7 +208,7 @@ export async function LatestPostsSection({ data, settings, ctx }: SectionProps<{
           <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} />
           {data.cta?.href && <div className="shrink-0" data-reveal><CtaLink value={data.cta} locale={locale} variant="outline" /></div>}
         </div>
-        <div className="mt-14" data-reveal>
+        <div className="mt-9 lg:mt-14" data-reveal>
           {slider ? (
             <PostSlider posts={views} locale={locale} labels={{ previous: dict.previous, next: dict.next, read: dict.readArticle }} />
           ) : (
@@ -248,7 +248,7 @@ export async function PostListingSection({ data, settings, ctx }: SectionProps<{
     <SectionShell settings={settings}>
       <div className="container-qe">
         {(data.showSearch || categories.length > 0) && (
-          <div className="mb-14 flex flex-col gap-6 border-b border-line pb-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="mb-9 lg:mb-14 flex flex-col gap-6 border-b border-line pb-8 lg:flex-row lg:items-center lg:justify-between">
             {categories.length > 0 && (
               <ul className="flex flex-wrap gap-2">
                 <li><Link href={qs({ q })} className={cn("inline-block rounded-full border px-4 py-2 text-sm font-semibold", !category ? "border-navy bg-navy text-white" : "border-line-strong text-ink hover:border-navy")}>{dict.allCategories}</Link></li>
@@ -285,7 +285,7 @@ export async function PostListingSection({ data, settings, ctx }: SectionProps<{
           <>
             {lead && <PostLead post={lead} locale={locale} readLabel={dict.readArticle} label={dict.featuredArticle} />}
             {rest.length > 0 && (
-              <div className={cn("grid gap-x-8 gap-y-14 md:grid-cols-2 lg:grid-cols-3", lead && "mt-16")}>
+              <div className={cn("grid gap-x-8 gap-y-14 md:grid-cols-2 lg:grid-cols-3", lead && "mt-10 lg:mt-16")}>
                 {rest.map((p) => <PostCardBody key={p.id} post={p} locale={locale} readLabel={dict.readArticle} />)}
               </div>
             )}
@@ -293,7 +293,7 @@ export async function PostListingSection({ data, settings, ctx }: SectionProps<{
         )}
 
         {result.pages > 1 && (
-          <nav className="mt-16 flex items-center justify-between border-t border-line pt-8" aria-label={dict.page}>
+          <nav className="mt-10 lg:mt-16 flex items-center justify-between border-t border-line pt-8" aria-label={dict.page}>
             {page > 1 ? <Link href={qs({ q, category, page: page - 1 })} className="btn btn-outline" rel="prev">{dict.previous}</Link> : <span />}
             <span className="text-sm text-muted">{dict.page} {page} {dict.of} {result.pages}</span>
             {page < result.pages ? <Link href={qs({ q, category, page: page + 1 })} className="btn btn-outline" rel="next">{dict.next}</Link> : <span />}

@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Clock } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock } from "lucide-react";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { tr } from "@/lib/i18n/localized";
 import { getSiteDictionary } from "@/lib/i18n/site-dictionary";
 import { getPost, relatedPosts } from "@/lib/content/posts";
 import { getMedia } from "@/lib/media";
 import { readingMinutes } from "@/lib/sanitize";
-import { absoluteUrl, buildMetadata } from "@/lib/seo";
+import { absoluteUrl, buildMetadata, seoFor } from "@/lib/seo";
 import { getSetting } from "@/lib/settings";
 import { getBrandAssets } from "@/lib/content/brand";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
 import { JsonLd } from "@/components/site/json-ld";
 import { MediaImage } from "@/components/site/media-image";
 import { PostCard, formatDate } from "@/components/site/post-card";
-import { SocialIcon } from "@/lib/icons";
+import { Icon, SocialIcon } from "@/lib/icons";
 
 type Params = Promise<{ locale: string; slug: string }>;
 
@@ -25,12 +25,16 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const post = await getPost(slug, locale);
   if (!post) return {};
   const [ar, en] = await Promise.all([getPost(slug, "ar"), getPost(slug, "en")]);
+  const seo = seoFor(post.seo, locale);
   return buildMetadata({
     locale,
     path: `/insights/${slug}`,
-    title: tr(post.seo?.title, locale) || tr(post.title, locale),
-    description: tr(post.seo?.description, locale) || tr(post.excerpt, locale),
-    ogImageId: post.seo?.ogImageId ?? post.coverId,
+    title: seo.title || tr(post.title, locale),
+    description: seo.description || tr(post.excerpt, locale),
+    ogTitle: seo.ogTitle,
+    ogDescription: seo.ogDescription,
+    ogImageId: seo.ogImageId ?? post.coverId,
+    noindex: seo.noindex,
     type: "article",
     publishedTime: post.publishedAt,
     availableLocales: [ar && "ar", en && "en"].filter(Boolean) as Locale[],
@@ -104,6 +108,37 @@ export default async function InsightPage({ params }: { params: Params }) {
                 ))}
               </ul>
             )}
+            {post.services.length > 0 && (
+              <aside className="mt-12 border-t border-line pt-10" aria-labelledby="article-services">
+                <h2 id="article-services" className="heading t-card text-ink">{dict.articleServices}</h2>
+                <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+                  {post.services.map((s) => (
+                    <li key={s.id}>
+                      <Link href={`/${locale}/services/${s.slug}`} className="group flex h-full items-start gap-4 border border-line bg-white p-4 transition-colors hover:border-tech-600/60">
+                        <span className="grid size-10 shrink-0 place-items-center rounded-sm bg-sky-50 text-tech-600 transition-colors group-hover:bg-navy group-hover:text-sky"><Icon name={s.icon} className="size-5" /></span>
+                        <span className="min-w-0">
+                          <span className="block font-semibold text-ink group-hover:text-tech-600">{tr(s.title, locale, true)}</span>
+                          {tr(s.summary, locale) && <span className="mt-1 line-clamp-2 block text-sm leading-relaxed text-body">{tr(s.summary, locale)}</span>}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </aside>
+            )}
+            <div className="relative mt-12 overflow-hidden bg-navy p-6 text-white sm:p-8">
+              <div className="grid-texture-dark absolute inset-0 opacity-50" aria-hidden />
+              <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="heading t-card text-white">{dict.discussTopic}</p>
+                  <p className="mt-2 text-white/70">{dict.discussTopicText}</p>
+                </div>
+                <Link href={`/${locale}/consultation${post.services[0] ? `?service=${post.services[0].slug}` : ""}`} className="btn btn-primary shrink-0">
+                  {dict.requestConsultation}
+                  <ArrowRight className="btn-arrow size-4" aria-hidden />
+                </Link>
+              </div>
+            </div>
             <Link href={`/${locale}/insights`} className="mt-12 inline-flex items-center gap-2 font-semibold text-tech-600 hover:text-tech-700">
               <ArrowLeft className="size-4 rtl:-scale-x-100" aria-hidden />
               {dict.insights}
@@ -126,7 +161,7 @@ export default async function InsightPage({ params }: { params: Params }) {
       <JsonLd
         data={{
           "@context": "https://schema.org",
-          "@type": "Article",
+          "@type": "BlogPosting",
           headline: title,
           description: tr(post.excerpt, locale) || undefined,
           datePublished: post.publishedAt,
@@ -134,7 +169,11 @@ export default async function InsightPage({ params }: { params: Params }) {
           inLanguage: locale,
           mainEntityOfPage: url,
           image: cover ? absoluteUrl(cover.url) : absoluteUrl("/brand/og-default.jpg"),
-          author: post.authorName ? { "@type": "Person", name: post.authorName } : { "@type": "Organization", name: tr(general.siteName, locale, true) },
+          author: post.authorName ? { "@type": "Organization", name: post.authorName, url: absoluteUrl(`/${locale}`) } : { "@type": "Organization", name: tr(general.siteName, locale, true) },
+          ...(post.category ? { articleSection: tr(post.category.name, locale, true) } : {}),
+          ...(post.tags.length ? { keywords: post.tags.join(", ") } : {}),
+          wordCount: content.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length,
+          ...(post.services.length ? { about: post.services.map((s) => ({ "@type": "Service", name: tr(s.title, locale, true), url: absoluteUrl(`/${locale}/services/${s.slug}`) })) } : {}),
           publisher: { "@type": "Organization", name: tr(general.siteName, locale, true), logo: { "@type": "ImageObject", url: absoluteUrl(brand.logoColor.url) } },
         }}
       />

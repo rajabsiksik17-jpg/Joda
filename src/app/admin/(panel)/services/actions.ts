@@ -42,7 +42,7 @@ export async function saveService(id: string | null, input: unknown): Promise<Ac
       outcomes: v.outcomes as Prisma.InputJsonValue,
       visual: (v.visual as string) || "auto",
       capabilityLayout: (v.capabilityLayout as string) || "grid",
-      seo: { title: v.seoTitle, description: v.seoDescription, ogImageId: v.ogImageId } as Prisma.InputJsonValue,
+      seo: { title: v.seoTitle, description: v.seoDescription, ogTitle: v.ogTitle, ogDescription: v.ogDescription, ogImageId: v.ogImageId, noindex: !!v.noindex } as Prisma.InputJsonValue,
       featured: !!v.featured,
       status,
       categoryId: (v.categoryId as string | null) || null,

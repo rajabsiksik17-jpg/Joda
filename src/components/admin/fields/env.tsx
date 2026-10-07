@@ -56,6 +56,14 @@ export function actionErrorText(code: string, tx: (en: string, ar: string) => st
     last_super_admin: ["At least one active Super Admin is required.", "يجب وجود مدير عام نشط واحد على الأقل."],
     self: ["You can't do this to your own account.", "لا يمكنك تنفيذ ذلك على حسابك."],
     server: ["Something went wrong. Please try again.", "حدث خطأ ما. يرجى المحاولة مرة أخرى."],
+    google_not_configured: ["Add the Google API credentials first.", "أضف بيانات اعتماد Google API أولاً."],
+    google_not_connected: ["Connect a Google account first.", "اربط حساب Google أولاً."],
+    google_auth: ["Google rejected the credentials or the connection expired. Reconnect the account.", "رفض Google بيانات الاعتماد أو انتهت صلاحية الربط. أعد ربط الحساب."],
+    google_permission: ["The connected Google account has no access to this property, or the API is not enabled in Google Cloud.", "حساب Google المرتبط لا يملك صلاحية على هذه الخاصية، أو أن الواجهة البرمجية غير مفعّلة في Google Cloud."],
+    google_not_found: ["The selected property was not found.", "لم يتم العثور على الخاصية المحددة."],
+    google_quota: ["Google's request limit was reached. Try again later.", "تم بلوغ حد الطلبات لدى Google. حاول لاحقاً."],
+    google_network: ["Could not reach Google. Check the server's internet connection.", "تعذّر الوصول إلى Google. تحقق من اتصال الخادم بالإنترنت."],
+    google_api: ["Google returned an error. Check the details and try again.", "أعاد Google خطأ. راجع التفاصيل وحاول مجدداً."],
   };
   const m = map[code] ?? map.server;
   return tx(m[0], m[1]);

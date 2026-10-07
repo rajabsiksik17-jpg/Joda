@@ -50,10 +50,13 @@ export async function savePost(id: string | null, input: unknown): Promise<Actio
       status,
       publishedAt,
       featured: !!v.featured,
-      seo: { title: v.seoTitle, description: v.seoDescription, ogImageId: v.ogImageId } as Prisma.InputJsonValue,
+      seo: { title: v.seoTitle, description: v.seoDescription, ogTitle: v.ogTitle, ogDescription: v.ogDescription, ogImageId: v.ogImageId, noindex: !!v.noindex } as Prisma.InputJsonValue,
       updatedById: user.id,
     };
-    const saved = id ? await db.blogPost.update({ where: { id }, data }) : await db.blogPost.create({ data: { ...data, createdById: user.id } });
+    const serviceIds = ((v.relatedServiceIds as string[]) ?? []).map((s) => ({ id: s }));
+    const saved = id
+      ? await db.blogPost.update({ where: { id }, data: { ...data, services: { set: serviceIds } } })
+      : await db.blogPost.create({ data: { ...data, createdById: user.id, services: { connect: serviceIds } } });
     await audit({ action: id ? "post.update" : "post.create", userId: user.id, actorEmail: user.email, entityType: "post", entityId: saved.id, metadata: { slug: saved.slug, status, publishedAt: publishedAt?.toISOString() } });
     invalidateContent();
     return { ok: true, data: { id: saved.id } };

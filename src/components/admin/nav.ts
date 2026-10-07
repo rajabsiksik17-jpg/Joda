@@ -4,7 +4,14 @@ export type AdminNavItem = { href: string; en: string; ar: string; icon: string;
 export type AdminNavGroup = { en: string; ar: string; items: AdminNavItem[] };
 
 export const ADMIN_NAV: AdminNavGroup[] = [
-  { en: "Overview", ar: "نظرة عامة", items: [{ href: "/admin", en: "Dashboard", ar: "لوحة التحكم", icon: "LayoutDashboard", permission: "dashboard.view" }] },
+  {
+    en: "Overview",
+    ar: "نظرة عامة",
+    items: [
+      { href: "/admin", en: "Dashboard", ar: "لوحة التحكم", icon: "LayoutDashboard", permission: "dashboard.view" },
+      { href: "/admin/analytics", en: "Analytics", ar: "التحليلات", icon: "BarChart3", permission: "analytics.view" },
+    ],
+  },
   {
     en: "Content",
     ar: "المحتوى",
@@ -34,6 +41,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
       { href: "/admin/navigation", en: "Navigation", ar: "القوائم", icon: "Menu", permission: "navigation.edit" },
       { href: "/admin/contact", en: "Contact details", ar: "بيانات التواصل", icon: "Phone", permission: "contact.edit" },
       { href: "/admin/seo", en: "SEO", ar: "تحسين محركات البحث", icon: "Search", permission: "seo.edit" },
+      { href: "/admin/integrations", en: "Integrations", ar: "التكاملات", icon: "Plug", permission: "settings.edit" },
       { href: "/admin/settings", en: "Settings", ar: "الإعدادات", icon: "Settings", permission: "settings.edit" },
     ],
   },

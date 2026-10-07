@@ -2,7 +2,7 @@ import type { L } from "../i18n/localized";
 import type { SectionSettings } from "./registry";
 
 export type RenderSection = { id: string; type: string; data: Record<string, unknown>; settings: Partial<SectionSettings> };
-export type PageSeo = { title?: L; description?: L; ogImageId?: string | null; noindex?: boolean };
+export type PageSeo = { title?: L; description?: L; ogTitle?: L; ogDescription?: L; ogImageId?: string | null; noindex?: boolean };
 export type PageSnapshot = { title: L; seo: PageSeo; sections: RenderSection[]; kind: string; updatedAt: string };
 
 /** Freezes the current editable state of a page into what the public site renders. */

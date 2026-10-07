@@ -480,10 +480,11 @@ function OutlineItem({ id, active, hidden, hasError, icon, label, hint, canEdit,
 
 function PageSettingsDrawer({ open, onOpenChange, page, canEdit, onSaved }: { open: boolean; onOpenChange: (o: boolean) => void; page: PageInfo; canEdit: boolean; onSaved: (p: Partial<PageInfo>) => void }) {
   const { tx, locale } = useAdminI18n();
-  const seo0 = page.seo as { title?: { ar?: string; en?: string }; description?: { ar?: string; en?: string }; ogImageId?: string | null; noindex?: boolean };
+  type Lz = { ar?: string; en?: string };
+  const seo0 = page.seo as { title?: Lz; description?: Lz; ogTitle?: Lz; ogDescription?: Lz; ogImageId?: string | null; noindex?: boolean };
   const [title, setTitle] = useState(page.title);
   const [slug, setSlug] = useState(page.slug);
-  const [seo, setSeo] = useState({ title: seo0.title ?? {}, description: seo0.description ?? {}, ogImageId: seo0.ogImageId ?? null, noindex: !!seo0.noindex });
+  const [seo, setSeo] = useState({ title: seo0.title ?? {}, description: seo0.description ?? {}, ogTitle: seo0.ogTitle ?? {}, ogDescription: seo0.ogDescription ?? {}, ogImageId: seo0.ogImageId ?? null, noindex: !!seo0.noindex });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
 
@@ -523,6 +524,12 @@ function PageSettingsDrawer({ open, onOpenChange, page, canEdit, onSaved }: { op
             </FieldShell>
             <FieldShell label={tx("Meta description", "وصف الميتا")} help={tx(`Aim for 120–160 characters. AR: ${descLen("ar")} · EN: ${descLen("en")}`, `يُفضّل 120–160 حرفاً. ع: ${descLen("ar")} · EN: ${descLen("en")}`)}>
               <LocalizedInput id="ps-seo-desc" value={seo.description} onChange={(v) => setSeo({ ...seo, description: v })} multiline rows={3} max={320} />
+            </FieldShell>
+            <FieldShell label={tx("Social sharing title (optional)", "عنوان المشاركة الاجتماعية (اختياري)")}>
+              <LocalizedInput id="ps-og-title" value={seo.ogTitle} onChange={(v) => setSeo({ ...seo, ogTitle: v })} max={120} />
+            </FieldShell>
+            <FieldShell label={tx("Social sharing description (optional)", "وصف المشاركة الاجتماعية (اختياري)")}>
+              <LocalizedInput id="ps-og-desc" value={seo.ogDescription} onChange={(v) => setSeo({ ...seo, ogDescription: v })} multiline rows={2} max={320} />
             </FieldShell>
             <FieldShell label={tx("Social sharing image (1200×630 recommended)", "صورة المشاركة الاجتماعية (يُنصح بـ 1200×630)")}>
               <MediaField value={seo.ogImageId} onChange={(v) => setSeo({ ...seo, ogImageId: v })} />

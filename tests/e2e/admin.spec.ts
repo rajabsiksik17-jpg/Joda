@@ -141,3 +141,15 @@ test("consultation requests can be found, updated and annotated", async ({ page 
   await page.getByRole("alertdialog").getByRole("button", { name: /Delete|حذف/ }).click();
   await expect(page.getByText(/Deleted|تم الحذف/)).toBeVisible();
 });
+
+test("analytics shows a clear not-connected state and integrations explain the setup", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/admin/analytics");
+  await expect(page.getByText(/Not connected|غير مرتبط/).first()).toBeVisible();
+  await page.goto("/admin/integrations");
+  await expect(page.getByText(/api\/admin\/google\/callback/)).toBeVisible();
+  // Starting OAuth without credentials goes back to the integrations page instead of Google.
+  const res = await page.request.get("/api/admin/google/connect", { maxRedirects: 0 });
+  expect(res.status()).toBe(307);
+  expect(res.headers()["location"]).toContain("/admin/integrations?google=not_configured");
+});

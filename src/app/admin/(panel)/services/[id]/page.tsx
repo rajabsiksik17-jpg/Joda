@@ -24,14 +24,14 @@ export default async function ServiceEditPage({ params }: { params: Promise<{ id
         id={null}
         title={locale === "ar" ? "خدمة جديدة" : "New service"}
         env={env}
-        initial={{ title: empty, summary: empty, description: empty, whyItMatters: empty, outcomes: [], visual: "auto", capabilityLayout: "grid", capabilities: [], steps: [], ctaLabel: empty, status: "DRAFT", slug: "", icon: "sparkles", categoryId: null, featured: false, imageId: null, relatedIds: [], seoTitle: empty, seoDescription: empty, ogImageId: null }}
+        initial={{ title: empty, summary: empty, description: empty, whyItMatters: empty, outcomes: [], visual: "auto", capabilityLayout: "grid", capabilities: [], steps: [], ctaLabel: empty, status: "DRAFT", slug: "", icon: "sparkles", categoryId: null, featured: false, imageId: null, relatedIds: [], seoTitle: empty, seoDescription: empty, ogTitle: empty, ogDescription: empty, ogImageId: null, noindex: false }}
       />
     );
   }
 
   const s = await db.service.findFirst({ where: { id, deletedAt: null }, include: { related: { select: { id: true } } } });
   if (!s) notFound();
-  const seo = (s.seo as { title?: L; description?: L; ogImageId?: string | null }) ?? {};
+  const seo = (s.seo as { title?: L; description?: L; ogTitle?: L; ogDescription?: L; ogImageId?: string | null; noindex?: boolean }) ?? {};
   return (
     <ServiceEditorClient
       id={s.id}
@@ -59,7 +59,10 @@ export default async function ServiceEditPage({ params }: { params: Promise<{ id
         relatedIds: s.related.map((r) => r.id),
         seoTitle: seo.title ?? empty,
         seoDescription: seo.description ?? empty,
+        ogTitle: seo.ogTitle ?? empty,
+        ogDescription: seo.ogDescription ?? empty,
         ogImageId: seo.ogImageId ?? null,
+        noindex: !!seo.noindex,
       }}
     />
   );

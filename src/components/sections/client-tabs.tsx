@@ -13,7 +13,7 @@ function Tile({ c }: { c: ClientTile }) {
   ) : (
     <span className="px-3 text-center text-[0.95rem] leading-snug font-semibold text-ink/80 transition-colors group-hover:text-navy" dir="auto">{c.name}</span>
   );
-  const cls = "group flex h-28 items-center justify-center bg-white transition-colors hover:bg-sky-50/60";
+  const cls = "group flex h-20 items-center justify-center bg-white px-3 text-center transition-colors hover:bg-sky-50/60 sm:h-28";
   return c.url ? (
     <a href={c.url} target="_blank" rel="noopener noreferrer" className={cls} aria-label={c.name}>{inner}</a>
   ) : (

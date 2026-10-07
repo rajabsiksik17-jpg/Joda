@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const path = pagePath(p.slug) === "/" ? "" : pagePath(p.slug);
     add(path, p.updatedAt, locales, p.slug === "home" ? 1 : 0.8);
   }
-  for (const s of services) add(`/services/${s.slug}`, s.updatedAt, locales.filter((l) => hasLocale(s.title, l)), 0.9);
+  for (const s of services.filter((x) => !x.seo?.noindex)) add(`/services/${s.slug}`, s.updatedAt, locales.filter((l) => hasLocale(s.title, l)), 0.9);
   for (const p of posts) add(`/insights/${p.slug}`, p.updatedAt, locales.filter((l) => hasLocale(p.title, l)), 0.6);
   return entries;
 }

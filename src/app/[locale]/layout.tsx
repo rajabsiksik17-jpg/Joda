@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import { fontVariables } from "../fonts";
 import "../globals.css";
 import { dirOf, isLocale, locales, type Locale } from "@/lib/i18n/config";
@@ -87,7 +88,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
     <html lang={locale} dir={dirOf(locale)} className={fontVariables} suppressHydrationWarning>
       <head>
         {/* Enables reveal-on-scroll styles only when JavaScript runs (content stays visible otherwise). */}
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        <Script id="js-flag" strategy="beforeInteractive">{"document.documentElement.classList.add('js')"}</Script>
       </head>
       <body className="min-h-svh">
         {inMaintenance ? (

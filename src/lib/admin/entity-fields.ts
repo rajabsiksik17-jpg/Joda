@@ -3,9 +3,12 @@ import { bi, type Field } from "../sections/fields";
 const opt = (value: string, en: string, ar: string) => ({ value, label: bi(en, ar) });
 
 const seoFields: Field[] = [
-  { type: "text", name: "seoTitle", label: bi("Meta title (optional)", "عنوان الميتا (اختياري)"), max: 120 },
+  { type: "text", name: "seoTitle", label: bi("Meta title (50–60 characters; defaults to the title)", "عنوان الميتا (50–60 حرفاً؛ افتراضياً العنوان)"), max: 120 },
   { type: "textarea", name: "seoDescription", label: bi("Meta description (120–160 characters)", "وصف الميتا (120–160 حرفاً)"), max: 320, rows: 3 },
-  { type: "media", name: "ogImageId", label: bi("Social sharing image", "صورة المشاركة الاجتماعية"), accept: "image" },
+  { type: "text", name: "ogTitle", label: bi("Social sharing title (optional)", "عنوان المشاركة الاجتماعية (اختياري)"), max: 120 },
+  { type: "textarea", name: "ogDescription", label: bi("Social sharing description (optional)", "وصف المشاركة الاجتماعية (اختياري)"), max: 320, rows: 2 },
+  { type: "media", name: "ogImageId", label: bi("Social sharing image (1200×630)", "صورة المشاركة الاجتماعية (1200×630)"), accept: "image" },
+  { type: "boolean", name: "noindex", label: bi("Hide from search engines (noindex)", "إخفاء عن محركات البحث (noindex)") },
 ];
 
 export const SERVICE_MAIN_FIELDS: Field[] = [
@@ -95,6 +98,7 @@ export const POST_SIDE_FIELDS: Field[] = [
   { type: "media", name: "coverId", label: bi("Cover image", "صورة الغلاف"), accept: "image" },
   { type: "reference", name: "categoryId", label: bi("Category", "التصنيف"), collection: "blogCategories" },
   { type: "tags", name: "tags", label: bi("Tags", "الوسوم") },
+  { type: "reference", name: "relatedServiceIds", label: bi("Related services (linked from the article and the service page)", "الخدمات ذات الصلة (تُربط من المقال ومن صفحة الخدمة)"), collection: "services", multiple: true },
   { type: "text", name: "authorName", label: bi("Author (optional)", "الكاتب (اختياري)"), localized: false, max: 120 },
   { type: "boolean", name: "featured", label: bi("Featured", "مميز") },
 ];

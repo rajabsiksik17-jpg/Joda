@@ -275,14 +275,14 @@ export function ConsultationForm({ locale, token, labels, formLabels, countries,
 
       <fieldset className="sm:col-span-2">
         <legend className="mb-3 text-sm font-semibold text-ink">{labels.preferred}</legend>
-        <div className={cn("grid gap-3", methods.length === 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2")} role="radiogroup">
+        <div className={cn("grid gap-2 sm:gap-3", methods.length === 3 ? "grid-cols-3" : "grid-cols-2")} role="radiogroup">
           {methods.map((m) => {
             const on = method === m.value;
             return (
-              <label key={m.value} className={cn("group relative flex cursor-pointer items-center gap-3 border px-4 py-3.5 transition-all duration-300 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-tech/40", on ? "border-navy bg-navy text-white" : "border-line-strong bg-white text-ink hover:border-ink/40")}>
+              <label key={m.value} className={cn("group relative flex cursor-pointer flex-col items-center gap-2 border px-2 py-3 text-center transition-all duration-300 sm:flex-row sm:gap-3 sm:px-4 sm:py-3.5 sm:text-start has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-tech/40", on ? "border-navy bg-navy text-white" : "border-line-strong bg-white text-ink hover:border-ink/40")}>
                 <input type="radio" name="preferredContactChoice" value={m.value} checked={on} onChange={() => setMethod(m.value)} className="sr-only" id={m.value === "email" ? "cq-preferredContact" : undefined} />
                 <span className={cn("grid size-9 place-items-center rounded-full transition-colors", on ? "bg-tech-600 text-white" : "bg-sky-50 text-tech-600")}><m.icon className="size-4" aria-hidden /></span>
-                <span className="text-sm font-semibold">{m.label}</span>
+                <span className="text-xs leading-tight font-semibold sm:text-sm">{m.label}</span>
               </label>
             );
           })}

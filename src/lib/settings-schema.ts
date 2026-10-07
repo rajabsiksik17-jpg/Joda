@@ -100,6 +100,22 @@ export const settingsSchemas = {
     otpMode: z.enum(["new_device", "every_login", "off"]).default("new_device"),
     trustedDeviceDays: z.number().int().min(1).max(180).default(30),
   }),
+  /** Google OAuth connection for Analytics / Search Console reporting. Secrets are encrypted. */
+  google: z.object({
+    clientId: z.string().trim().max(300).default(""),
+    clientSecretEnc: z.string().max(2000).default(""),
+    refreshTokenEnc: z.string().max(4000).default(""),
+    accountEmail: z.string().max(320).default(""),
+    scopes: z.array(z.string().max(200)).max(20).default([]),
+    connectedAt: z.string().max(40).default(""),
+    /** GA4 property used for reports, e.g. "properties/123456789" */
+    ga4Property: z.string().max(100).default(""),
+    ga4PropertyName: z.string().max(200).default(""),
+    /** Search Console property, e.g. "sc-domain:example.com" or "https://example.com/" */
+    searchConsoleSite: z.string().max(300).default(""),
+    lastSyncAt: z.string().max(40).default(""),
+    lastError: z.string().max(500).default(""),
+  }),
   email: z.object({
     /** Master switch for outgoing e-mail (notifications and sign-in codes). */
     enabled: z.boolean().default(true),

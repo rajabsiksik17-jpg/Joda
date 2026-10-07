@@ -4,9 +4,9 @@ import type { SettingKey } from "../settings-schema";
 
 const opt = (value: string, en: string, ar: string) => ({ value, label: bi(en, ar) });
 
-export type SettingsGroup = { key: Exclude<SettingKey, "email">; title: Bi; description: Bi; permission: Permission; fields: Field[] };
+export type SettingsGroup = { key: Exclude<SettingKey, "email" | "google">; title: Bi; description: Bi; permission: Permission; fields: Field[] };
 
-export const SETTINGS_GROUPS: Record<Exclude<SettingKey, "email">, SettingsGroup> = {
+export const SETTINGS_GROUPS: Record<Exclude<SettingKey, "email" | "google">, SettingsGroup> = {
   general: {
     key: "general",
     title: bi("General", "عام"),
@@ -83,7 +83,7 @@ export const SETTINGS_GROUPS: Record<Exclude<SettingKey, "email">, SettingsGroup
       { type: "tags", name: "notifyEmails", label: bi("Notify these e-mails (empty = contact recipients)", "إشعار هذه العناوين (فارغ = مستلمو رسائل التواصل)"), max: 10 },
       { type: "boolean", name: "autoReply", label: bi("Send an automatic confirmation to the requester", "إرسال تأكيد تلقائي لصاحب الطلب") },
       { type: "text", name: "defaultCountry", label: bi("Default country code when the visitor's country is unknown (e.g. JO)", "رمز الدولة الافتراضي عند تعذّر معرفة دولة الزائر (مثل JO)"), localized: false, max: 2, width: "half" },
-      { type: "tags", name: "preferredCountries", label: bi("Countries listed first (ISO codes, e.g. JO, SA, AE)", "الدول التي تظهر أولاً (رموز ISO مثل JO وSA وAE)"), max: 20 },
+      { type: "tags", name: "preferredCountries", label: bi("Countries listed first (ISO codes, e.g. JO, SA, AE)", "الدول التي تظهر أولاً (رموز ISO مثل JO و SA و AE)"), max: 20 },
       { type: "boolean", name: "allowWhatsApp", label: bi("Offer WhatsApp as a preferred contact method", "إتاحة واتساب كوسيلة تواصل مفضلة") },
     ],
   },

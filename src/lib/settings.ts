@@ -21,7 +21,7 @@ const cachedAll = unstable_cache(
 );
 
 /** Cached read for public rendering. Never use for secrets (email key is excluded). */
-export async function getSetting<K extends Exclude<SettingKey, "email">>(key: K): Promise<Settings<K>> {
+export async function getSetting<K extends Exclude<SettingKey, "email" | "google">>(key: K): Promise<Settings<K>> {
   const all = await cachedAll();
   return parseSetting(key, all[key]);
 }

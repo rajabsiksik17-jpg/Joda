@@ -20,7 +20,7 @@ export async function VideoSection({ data, settings, ctx }: SectionProps<VideoDa
   return (
     <SectionShell settings={settings}>
       <div className="container-qe">
-        <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-12" />
+        <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-8 lg:mb-12" />
         <div data-reveal="scale">
           <VideoPlayer embedUrl={embed} fileUrl={video?.isVideo ? video.url : null} posterUrl={poster?.url ?? null} title={tr(data.title, locale) || dict.play} playLabel={dict.play} />
         </div>
@@ -38,7 +38,7 @@ export async function GallerySection({ data, settings, ctx }: SectionProps<{ eye
   return (
     <SectionShell settings={settings}>
       <div className="container-qe">
-        <SectionHeading eyebrow={data.eyebrow} title={data.title} locale={locale} className="mb-12" />
+        <SectionHeading eyebrow={data.eyebrow} title={data.title} locale={locale} className="mb-8 lg:mb-12" />
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {images.map((img, i) => (
             <li key={i} className={cn(i % 5 === 0 && "sm:col-span-2 lg:col-span-2")} data-reveal>
@@ -64,7 +64,7 @@ export async function LogoCloudSection({ data, settings, ctx }: SectionProps<{ e
   return (
     <SectionShell settings={settings}>
       <div className="container-qe">
-        <SectionHeading eyebrow={data.eyebrow} title={data.title} locale={locale} align="center" className="mb-12" />
+        <SectionHeading eyebrow={data.eyebrow} title={data.title} locale={locale} align="center" className="mb-8 lg:mb-12" />
         <ul className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
           {logos.map((l, i) => {
             const img = <MediaImage asset={l.asset} locale={locale} alt={l.name} sizes="180px" className="h-12 w-auto object-contain opacity-70 grayscale transition hover:opacity-100 hover:grayscale-0" />;

@@ -19,6 +19,9 @@ type BuildInput = {
   path: string;
   title?: string;
   description?: string;
+  /** Social sharing overrides (default to title/description) */
+  ogTitle?: string;
+  ogDescription?: string;
   ogImageId?: string | null;
   noindex?: boolean;
   type?: "website" | "article";
@@ -46,8 +49,8 @@ export async function buildMetadata(input: BuildInput): Promise<Metadata> {
     alternates: { canonical: `/${input.locale}${path}`, languages },
     openGraph: {
       type: input.type ?? "website",
-      title: input.title || siteName,
-      description,
+      title: input.ogTitle || input.title || siteName,
+      description: input.ogDescription || description,
       url: `/${input.locale}${path}`,
       siteName,
       locale: localeMeta[input.locale].ogLocale,
@@ -57,8 +60,8 @@ export async function buildMetadata(input: BuildInput): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: input.title || siteName,
-      description,
+      title: input.ogTitle || input.title || siteName,
+      description: input.ogDescription || description,
       images: [ogImage.url],
       ...(seo.twitterHandle ? { site: seo.twitterHandle } : {}),
     },
@@ -68,4 +71,18 @@ export async function buildMetadata(input: BuildInput): Promise<Metadata> {
 
 export function seoText(value: L | undefined | null, locale: Locale) {
   return value ? tr(value, locale) : "";
+}
+
+export type SeoFields = { title?: L; description?: L; ogTitle?: L; ogDescription?: L; ogImageId?: string | null; noindex?: boolean };
+
+/** Localized SEO values for buildMetadata, with sensible fallbacks. */
+export function seoFor(seo: SeoFields | null | undefined, locale: Locale) {
+  return {
+    title: seo?.title ? tr(seo.title, locale) : "",
+    description: seo?.description ? tr(seo.description, locale) : "",
+    ogTitle: seo?.ogTitle ? tr(seo.ogTitle, locale) : "",
+    ogDescription: seo?.ogDescription ? tr(seo.ogDescription, locale) : "",
+    ogImageId: seo?.ogImageId ?? null,
+    noindex: !!seo?.noindex,
+  };
 }

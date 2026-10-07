@@ -61,19 +61,19 @@ export async function StatsSection({ data, settings, ctx }: SectionProps<StatsDa
             </div>
           )}
         </div>
-        <dl className="grid gap-5 sm:grid-cols-3 lg:col-span-7 lg:grid-cols-1 xl:grid-cols-3 xl:self-end">
+        <dl className="grid grid-cols-3 gap-2.5 sm:gap-5 lg:col-span-7 lg:grid-cols-1 xl:grid-cols-3 xl:self-end">
           {stats.map((s, i) => (
             <div
               key={s.id}
-              className={cn("relative flex flex-col-reverse justify-between overflow-hidden p-7 hover-lift xl:min-h-64", i === 0 ? "bg-navy text-white" : i === 1 ? "bg-tech-600 text-white" : dark ? "bg-white/10 text-white" : "bg-surface text-ink")}
+              className={cn("relative flex flex-col-reverse justify-between overflow-hidden p-4 hover-lift sm:p-7 xl:min-h-64", i === 0 ? "bg-navy text-white" : i === 1 ? "bg-tech-600 text-white" : dark ? "bg-white/10 text-white" : "bg-surface text-ink")}
               data-reveal
               style={{ "--reveal-delay": `${i * 90}ms` } as React.CSSProperties}
             >
-              <dt className={cn("mt-4 text-base font-medium", i < 2 ? "text-white/80" : dark ? "text-white/75" : "text-body")}>{tr(s.label, locale, true)}</dt>
+              <dt className={cn("mt-2 text-xs leading-snug font-medium sm:mt-4 sm:text-base", i < 2 ? "text-white/80" : dark ? "text-white/75" : "text-body")}>{tr(s.label, locale, true)}</dt>
               <dd className={cn("display t-stat rtl:font-[family-name:var(--font-cairo)]", i < 2 || dark ? "text-white" : "text-navy")}>
                 <CountUp value={s.value} />
               </dd>
-              <span className="pointer-events-none absolute top-5 end-5 grid grid-cols-3 gap-1 opacity-40" aria-hidden>
+              <span className="pointer-events-none absolute top-5 end-5 hidden grid-cols-3 gap-1 opacity-40 sm:grid" aria-hidden>
                 {Array.from({ length: 6 }, (_, k) => <span key={k} className={cn("size-1.5", k % 2 ? "bg-sky" : "bg-white/70")} />)}
               </span>
             </div>
@@ -98,7 +98,7 @@ export async function LeaderMessageSection({ data, settings, ctx }: SectionProps
     .sort((a, b) => Number(b.featured) - Number(a.featured) || Number(b.isLeadership) - Number(a.isLeadership));
   const mode = data.mode ?? "single";
   const heading = (tr(data.eyebrow, locale) || tr(data.title, locale)) && (
-    <div className="mb-12 max-w-3xl" data-reveal>
+    <div className="mb-8 lg:mb-12 max-w-3xl" data-reveal>
       {tr(data.eyebrow, locale) && <p className="eyebrow mb-5">{tr(data.eyebrow, locale)}</p>}
       {tr(data.title, locale) && <h2 className="display t-section">{tr(data.title, locale)}</h2>}
     </div>
@@ -160,8 +160,8 @@ export async function LeaderMessageSection({ data, settings, ctx }: SectionProps
 
   return (
     <SectionShell settings={settings} className="overflow-hidden">
-      <div className="container-qe grid items-center gap-14 lg:grid-cols-12 lg:gap-20">
-        <div className="relative mx-auto w-full max-w-md lg:col-span-5" data-reveal="clip">
+      <div className="container-qe grid items-center gap-10 lg:grid-cols-12 lg:gap-20">
+        <div className="relative mx-auto w-full max-w-[17rem] sm:max-w-md lg:col-span-5" data-reveal="clip">
           <div className="absolute inset-x-0 bottom-0 h-[78%] bg-navy" aria-hidden>
             <div className="grid-texture-dark absolute inset-0 opacity-60" />
             <div className="absolute end-6 top-6 grid grid-cols-3 gap-1.5" aria-hidden>
@@ -178,8 +178,8 @@ export async function LeaderMessageSection({ data, settings, ctx }: SectionProps
         <figure className="lg:col-span-7" data-reveal>
           {tr(data.eyebrow, locale) && <p className="eyebrow mb-6">{tr(data.eyebrow, locale)}</p>}
           {tr(data.title, locale) && <h2 className="display t-section mb-8">{tr(data.title, locale)}</h2>}
-          <span className="display block h-14 text-[7rem] leading-none text-tech/30 select-none" aria-hidden>“</span>
-          <blockquote className={cn("space-y-5 text-lg leading-[1.9] sm:text-xl", dark ? "text-white/85" : "text-ink/85")}>
+          <span className="display block h-10 text-[5rem] leading-none text-tech/30 select-none sm:h-14 sm:text-[7rem]" aria-hidden>“</span>
+          <blockquote className={cn("space-y-4 text-[1.05rem] leading-[1.9] sm:space-y-5 sm:text-xl", dark ? "text-white/85" : "text-ink/85")}>
             <Paragraphs text={message} />
           </blockquote>
           <figcaption className="mt-10 flex items-center gap-5">
@@ -221,7 +221,7 @@ export async function TeamSection({ data, settings, ctx }: SectionProps<{ eyebro
     <SectionShell settings={settings}>
       <div className="container-qe">
         <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} />
-        <div className="mt-14">
+        <div className="mt-9 lg:mt-14">
           <TeamDirectory
             people={people}
             locale={locale}
@@ -253,8 +253,8 @@ export async function PartnersSection({ data, settings, ctx }: SectionProps<{ ey
       <div className="container-qe">
         <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} />
         {featured && (
-          <div className="mt-14 grid overflow-hidden border border-line bg-white shadow-soft lg:grid-cols-12" data-reveal>
-            <div className={cn("relative flex items-center justify-center p-10 lg:col-span-5 lg:p-14", TONE[featured.logoTone as keyof typeof TONE] ?? TONE.light)}>
+          <div className="mt-9 lg:mt-14 grid overflow-hidden border border-line bg-white shadow-soft lg:grid-cols-12" data-reveal>
+            <div className={cn("relative flex items-center justify-center p-8 lg:col-span-5 lg:p-14", TONE[featured.logoTone as keyof typeof TONE] ?? TONE.light)}>
               <div className="absolute start-0 top-0 h-full w-1 bg-tech-600" aria-hidden />
               {logos[featuredIdx] ? (
                 <MediaImage asset={logos[featuredIdx]} locale={locale} alt={tr(featured.name, locale, true)} sizes="(min-width:1024px) 30vw, 80vw" className="h-auto max-h-28 w-auto max-w-full object-contain" />
@@ -262,7 +262,7 @@ export async function PartnersSection({ data, settings, ctx }: SectionProps<{ ey
                 <span className="display t-sub text-ink">{tr(featured.name, locale, true)}</span>
               )}
             </div>
-            <div className="flex flex-col justify-center gap-5 p-8 lg:col-span-7 lg:p-14">
+            <div className="flex flex-col justify-center gap-4 p-6 sm:gap-5 sm:p-8 lg:col-span-7 lg:p-14">
               <p className="text-xs font-semibold tracking-[0.16em] text-tech-600 uppercase rtl:text-sm rtl:tracking-normal">{dict.strategicPartner}</p>
               <h3 className="heading text-2xl text-ink">{tr(featured.name, locale, true)}</h3>
               <p className="lede">{tr(featured.description, locale)}</p>
@@ -276,7 +276,7 @@ export async function PartnersSection({ data, settings, ctx }: SectionProps<{ ey
           </div>
         )}
         {others.length > 0 && (
-          <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <ul className={cn("mt-4 grid gap-3 sm:mt-6 sm:gap-4", others.length === 1 ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4")}>
             {others.map((p) => {
               const idx = partners.indexOf(p);
               const content = logos[idx] ? (
@@ -287,9 +287,9 @@ export async function PartnersSection({ data, settings, ctx }: SectionProps<{ ey
               return (
                 <li key={p.id} data-reveal>
                   {p.url ? (
-                    <a href={p.url} target="_blank" rel="noopener noreferrer" className={cn("flex h-36 items-center justify-center border border-line p-6 hover-lift", TONE[p.logoTone as keyof typeof TONE] ?? TONE.light)} aria-label={tr(p.name, locale, true)}>{content}</a>
+                    <a href={p.url} target="_blank" rel="noopener noreferrer" className={cn("flex h-28 items-center justify-center border border-line p-6 hover-lift sm:h-36", TONE[p.logoTone as keyof typeof TONE] ?? TONE.light)} aria-label={tr(p.name, locale, true)}>{content}</a>
                   ) : (
-                    <div className={cn("flex h-36 items-center justify-center border border-line p-6", TONE[p.logoTone as keyof typeof TONE] ?? TONE.light)}>{content}</div>
+                    <div className={cn("flex h-28 items-center justify-center border border-line p-6 sm:h-36", TONE[p.logoTone as keyof typeof TONE] ?? TONE.light)}>{content}</div>
                   )}
                 </li>
               );

@@ -47,8 +47,8 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
         </div>
       )}
 
-      <div className="container-qe relative grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-12 lg:gap-10">
-        <div className="lg:col-span-4">
+      <div className="container-qe relative grid grid-cols-2 gap-x-6 gap-y-10 py-12 md:gap-12 md:py-16 lg:grid-cols-12 lg:gap-10">
+        <div className="col-span-2 lg:col-span-4">
           <Image src={brand.logoWhite.url} alt={siteName} width={brand.logoWhite.width} height={brand.logoWhite.height} className="h-14 w-auto" />
           {tr(footer.about, locale) && <p className="mt-6 max-w-sm leading-relaxed">{tr(footer.about, locale)}</p>}
           {chrome.socials.length > 0 && (
@@ -68,9 +68,9 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
         </div>
 
         {chrome.services.length > 0 && (
-          <nav className="lg:col-span-3" aria-label={dict.services}>
+          <nav className="col-span-2 sm:col-span-1 lg:col-span-3" aria-label={dict.services}>
             <h3 className="mb-5 text-sm font-semibold tracking-[0.14em] text-white uppercase rtl:tracking-normal">{dict.services}</h3>
-            <ul className="space-y-2.5">
+            <ul className="grid grid-cols-2 gap-x-6 gap-y-2.5 text-[0.95rem] sm:block sm:space-y-2.5 sm:text-base">
               {chrome.services.map((s) => (
                 <li key={s.id}>
                   <Link href={localizeHref(locale, `/services/${s.slug}`)} className="link-underline transition-colors hover:text-white">{tr(s.title, locale, true)}</Link>
@@ -81,7 +81,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
         )}
 
         {chrome.footer.length > 0 && (
-          <nav className="lg:col-span-2" aria-label={dict.footerNav}>
+          <nav className="col-span-1 lg:col-span-2" aria-label={dict.footerNav}>
             <h3 className="mb-5 text-sm font-semibold tracking-[0.14em] text-white uppercase rtl:tracking-normal">{dict.company}</h3>
             <ul className="space-y-2.5">
               {chrome.footer.map((n) => (
@@ -97,7 +97,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
           </nav>
         )}
 
-        <div className="lg:col-span-3">
+        <div className="col-span-1 lg:col-span-3">
           <h3 className="mb-5 text-sm font-semibold tracking-[0.14em] text-white uppercase rtl:tracking-normal">{dict.contactUs}</h3>
           <ul className="space-y-3.5">
             {channels.map((c) => {

@@ -6,9 +6,11 @@ import { isLocale, type Locale } from "@/lib/i18n/config";
 import { tr } from "@/lib/i18n/localized";
 import { getSiteDictionary } from "@/lib/i18n/site-dictionary";
 import { getFaqs, getService, getServices, type ServiceView } from "@/lib/content/collections";
+import { postsForService } from "@/lib/content/posts";
+import { PostCard } from "@/components/site/post-card";
 import { getMedia } from "@/lib/media";
 import { Icon } from "@/lib/icons";
-import { absoluteUrl, buildMetadata } from "@/lib/seo";
+import { absoluteUrl, buildMetadata, seoFor } from "@/lib/seo";
 import { getSetting } from "@/lib/settings";
 import { cn } from "@/lib/cn";
 import { Breadcrumbs } from "@/components/site/breadcrumbs";
@@ -27,12 +29,16 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!isLocale(locale)) return {};
   const service = await getService(slug);
   if (!service || !tr(service.title, locale)) return {};
+  const seo = seoFor(service.seo, locale);
   return buildMetadata({
     locale,
     path: `/services/${slug}`,
-    title: tr(service.seo?.title, locale) || tr(service.title, locale),
-    description: tr(service.seo?.description, locale) || tr(service.summary, locale) || tr(service.description, locale).slice(0, 300),
-    ogImageId: service.seo?.ogImageId ?? service.imageId,
+    title: seo.title || tr(service.title, locale),
+    description: seo.description || tr(service.summary, locale) || tr(service.description, locale).slice(0, 300),
+    ogTitle: seo.ogTitle,
+    ogDescription: seo.ogDescription,
+    ogImageId: seo.ogImageId ?? service.imageId,
+    noindex: seo.noindex,
   });
 }
 
@@ -169,7 +175,7 @@ export default async function ServicePage({ params }: { params: Params }) {
   const summary = tr(service.summary, locale);
   const description = tr(service.description, locale);
   const why = tr(service.whyItMatters, locale);
-  const [image, faqs] = await Promise.all([getMedia(service.imageId), getFaqs(null, service.id)]);
+  const [image, faqs, insights] = await Promise.all([getMedia(service.imageId), getFaqs(null, service.id), postsForService(service.id, locale)]);
   const groups: Group[] = service.capabilities
     .map((g) => ({ title: tr(g.title, locale), text: tr(g.text, locale), items: g.items.map((i) => tr(i, locale)).filter(Boolean) }))
     .filter((g) => g.items.length);
@@ -222,9 +228,9 @@ export default async function ServicePage({ params }: { params: Params }) {
               )}
             </div>
           </div>
-          <div className="relative mx-auto w-full max-w-md lg:col-span-5 lg:max-w-none" aria-hidden>
+          <div className="relative mx-auto w-full max-w-[15rem] sm:max-w-sm lg:col-span-5 lg:max-w-none" aria-hidden>
             <ServiceVisual visual={service.visual} slug={slug} className="animate-fade-up [animation-delay:150ms]" />
-            <span className="pointer-events-none absolute end-2 bottom-4 grid size-14 place-items-center rounded-sm bg-tech-600 text-white shadow-lift"><Icon name={service.icon} className="size-7" strokeWidth={1.5} /></span>
+            <span className="pointer-events-none absolute end-0 bottom-2 grid size-11 place-items-center rounded-sm bg-tech-600 text-white shadow-lift sm:end-2 sm:bottom-4 sm:size-14"><Icon name={service.icon} className="size-5 sm:size-7" strokeWidth={1.5} /></span>
           </div>
           {facts.length > 0 && (
             <dl className={cn("mx-auto grid w-full max-w-3xl divide-x divide-white/10 overflow-hidden rounded-sm border border-white/10 bg-white/[0.04] backdrop-blur-sm animate-fade-up [animation-delay:240ms] rtl:divide-x-reverse lg:col-span-12 lg:mt-4", facts.length === 3 ? "grid-cols-3" : facts.length === 2 ? "grid-cols-2" : "grid-cols-1")}>
@@ -273,7 +279,7 @@ export default async function ServicePage({ params }: { params: Params }) {
           <div className="container-qe">
             <div className="max-w-2xl" data-reveal>
               <p className="eyebrow mb-5">{dict.whatItDelivers}</p>
-              <h2 className="display t-section">{title}</h2>
+              <h2 className="display t-section">{dict.outcomesTitle}</h2>
             </div>
             <ul className={cn("mt-12 grid gap-5 sm:grid-cols-2", outcomes.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4")}>
               {outcomes.map((o, i) => (
@@ -292,10 +298,10 @@ export default async function ServicePage({ params }: { params: Params }) {
       {groups.length > 0 && (
         <section id="capabilities" className="section-y scroll-mt-32">
           <div className="container-qe">
-            <div className="mb-12 flex flex-col justify-between gap-6 lg:flex-row lg:items-end" data-reveal>
+            <div className="mb-8 lg:mb-12 flex flex-col justify-between gap-6 lg:flex-row lg:items-end" data-reveal>
               <div className="max-w-2xl">
                 <p className="eyebrow mb-5">{dict.capabilities}</p>
-                <h2 className="display t-section">{groups.length === 1 ? groups[0].title : title}</h2>
+                <h2 className="display t-section">{groups.length === 1 ? groups[0].title : dict.scopeTitle}</h2>
               </div>
               <p className="font-mono text-sm text-muted" dir="ltr">{String(capabilityCount).padStart(2, "0")} — {title}</p>
             </div>
@@ -311,9 +317,9 @@ export default async function ServicePage({ params }: { params: Params }) {
           <div className="container-qe relative">
             <div className="max-w-2xl" data-reveal>
               <p className="eyebrow mb-5">{dict.theJourney}</p>
-              <h2 className="display t-section text-white">{title}</h2>
+              <h2 className="display t-section text-white">{dict.approachTitle}</h2>
             </div>
-            <ol className={cn("relative mt-14 grid gap-10 sm:grid-cols-2 lg:gap-6", steps.length >= 4 ? "lg:grid-cols-4" : "lg:grid-cols-3")}>
+            <ol className={cn("relative mt-9 lg:mt-14 grid gap-7 sm:grid-cols-2 sm:gap-10 lg:gap-6", steps.length >= 4 ? "lg:grid-cols-4" : "lg:grid-cols-3")}>
               <span className="absolute top-6 hidden h-px w-full bg-gradient-to-r from-sky/70 via-white/15 to-transparent lg:block rtl:bg-gradient-to-l" aria-hidden />
               {steps.map((s, i) => (
                 <li key={i} className="group relative" data-reveal style={{ "--reveal-delay": `${i * 120}ms` } as React.CSSProperties}>
@@ -355,7 +361,21 @@ export default async function ServicePage({ params }: { params: Params }) {
       </section>
 
       {/* ── Related & next ── */}
-      <section className="section-y-compact pb-24">
+      {insights.length > 0 && (
+        <section className="theme-muted section-y-compact" aria-labelledby="service-insights">
+          <div className="container-qe">
+            <div className="mb-8 flex items-end justify-between gap-6" data-reveal>
+              <h2 id="service-insights" className="display t-title">{dict.relatedInsights}</h2>
+              <Link href={`/${locale}/insights`} className="hidden items-center gap-2 font-semibold text-tech-600 hover:text-tech-700 sm:inline-flex">{dict.allInsights}<ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden /></Link>
+            </div>
+            <div className="grid gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
+              {insights.map((p) => <PostCard key={p.id} post={p} locale={locale} readLabel={dict.readArticle} />)}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="section-y-compact pb-16 sm:pb-24">
         <div className="container-qe">
           {related.length > 0 && (
             <>
@@ -363,17 +383,17 @@ export default async function ServicePage({ params }: { params: Params }) {
                 <h2 className="display t-title">{dict.relatedServices}</h2>
                 <Link href={`/${locale}/services`} className="hidden items-center gap-2 font-semibold text-tech-600 hover:text-tech-700 sm:inline-flex">{dict.allServices}<ArrowRight className="size-4 rtl:-scale-x-100" aria-hidden /></Link>
               </div>
-              <ul className="grid gap-5 md:grid-cols-3">
+              <ul className="grid gap-3 sm:gap-5 md:grid-cols-3">
                 {related.map((r) => (
                   <li key={r.id} data-reveal>
-                    <Link href={`/${locale}/services/${r.slug}`} className="group flex h-full flex-col overflow-hidden rounded-sm border border-line bg-white transition-[border-color,box-shadow] duration-500 hover:border-tech-600/60 hover:shadow-lift">
-                      <div className="relative h-40 overflow-hidden bg-navy">
-                        <ServiceVisual visual={r.visual} slug={r.slug} className="absolute inset-x-8 -top-6 opacity-80 transition-transform duration-700 group-hover:scale-105" />
+                    <Link href={`/${locale}/services/${r.slug}`} className="group flex h-full overflow-hidden rounded-sm border border-line bg-white transition-[border-color,box-shadow] duration-500 hover:border-tech-600/60 hover:shadow-lift md:flex-col">
+                      <div className="relative w-24 shrink-0 overflow-hidden bg-navy md:h-40 md:w-auto">
+                        <ServiceVisual visual={r.visual} slug={r.slug} className="absolute inset-x-1 top-1/2 -translate-y-1/2 opacity-80 transition-transform duration-700 group-hover:scale-105 md:inset-x-8 md:-top-6 md:translate-y-0" />
                       </div>
-                      <div className="flex flex-1 flex-col p-6">
+                      <div className="flex flex-1 flex-col p-4 md:p-6">
                         <h3 className="heading t-card text-ink">{tr(r.title, locale)}</h3>
-                        <p className="mt-2 line-clamp-3 flex-1 leading-relaxed text-body">{tr(r.summary, locale)}</p>
-                        <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-tech-600">{dict.exploreService}<ArrowRight className="size-4 transition-transform group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1" aria-hidden /></span>
+                        <p className="mt-1.5 line-clamp-2 flex-1 text-[0.95rem] leading-relaxed text-body md:mt-2 md:line-clamp-3 md:text-base">{tr(r.summary, locale)}</p>
+                        <span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-tech-600 md:mt-5">{dict.exploreService}<ArrowRight className="size-4 transition-transform group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1" aria-hidden /></span>
                       </div>
                     </Link>
                   </li>

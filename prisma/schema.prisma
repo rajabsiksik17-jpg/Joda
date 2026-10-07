@@ -295,6 +295,7 @@ model Service {
   relatedOf    Service[]        @relation("RelatedServices")
   faqs         Faq[]
   menuItems    MenuItem[]
+  posts        BlogPost[]       @relation("PostServices")
   createdById  String?
   updatedById  String?
   createdAt    DateTime         @default(now())
@@ -449,6 +450,8 @@ model BlogPost {
   publishedAt DateTime?
   featured    Boolean       @default(false)
   seo         Json?
+  /// Services this article relates to (internal links both ways)
+  services    Service[]     @relation("PostServices")
   createdById String?
   updatedById String?
   createdAt   DateTime      @default(now())

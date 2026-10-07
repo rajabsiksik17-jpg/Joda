@@ -28,6 +28,8 @@ const idSchema = z.string().min(1).max(64);
 const seoSchema = z.object({
   title: zLocalized(120),
   description: zLocalized(320),
+  ogTitle: zLocalized(120),
+  ogDescription: zLocalized(320),
   ogImageId: z.string().max(64).nullable().default(null),
   noindex: z.boolean().default(false),
 });

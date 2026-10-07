@@ -4,6 +4,7 @@
  */
 export const PERMISSIONS = {
   "dashboard.view": { group: "general", en: "View dashboard", ar: "عرض لوحة التحكم" },
+  "analytics.view": { group: "general", en: "View analytics & search performance", ar: "عرض التحليلات وأداء البحث" },
 
   "pages.view": { group: "content", en: "View pages", ar: "عرض الصفحات" },
   "pages.edit": { group: "content", en: "Create & edit pages", ar: "إنشاء وتعديل الصفحات" },
@@ -69,7 +70,7 @@ export const DEFAULT_ROLES: { key: string; name: { ar: string; en: string }; des
     description: { ar: "إنشاء المحتوى ونشره", en: "Creates and publishes content" },
     permissions: [
       "dashboard.view", "pages.view", "pages.edit", "pages.publish", "services.edit", "blog.edit", "blog.publish",
-      "collections.edit", "media.manage", "navigation.edit", "seo.edit", "messages.view", "consultations.view",
+      "collections.edit", "media.manage", "navigation.edit", "seo.edit", "messages.view", "consultations.view", "analytics.view",
     ],
   },
   {

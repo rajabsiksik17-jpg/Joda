@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { tr } from "@/lib/i18n/localized";
 import { getPublishedPage } from "@/lib/content/pages";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, seoFor } from "@/lib/seo";
 import { SectionList } from "@/components/sections/section-renderer";
 
 type Params = Promise<{ locale: string; slug?: string[] }>;
@@ -22,13 +22,18 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!page) return {};
   const locale: Locale = raw;
   const isHome = slug === "home";
+  const seo = seoFor(page.seo, locale);
   return buildMetadata({
     locale,
     path: isHome ? "" : `/${slug}`,
-    title: isHome ? undefined : tr(page.seo.title, locale) || tr(page.title, locale, true),
-    description: tr(page.seo.description, locale),
-    ogImageId: page.seo.ogImageId,
-    noindex: page.seo.noindex,
+    // The home page uses its own SEO title as-is (no "| site name" suffix).
+    title: isHome ? seo.title || undefined : seo.title || tr(page.title, locale, true),
+    absoluteTitle: isHome && !!seo.title,
+    description: seo.description,
+    ogTitle: seo.ogTitle,
+    ogDescription: seo.ogDescription,
+    ogImageId: seo.ogImageId,
+    noindex: seo.noindex,
   });
 }
 

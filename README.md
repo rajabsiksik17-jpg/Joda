@@ -187,6 +187,22 @@ global search.
 Roles are editable and custom roles can be created. Permissions are enforced on the server in
 every page, action and API route.
 
+### SEO, analytics & integrations
+- **SEO:** every page, service and article has bilingual meta title/description, social sharing
+  title/description/image and a noindex switch. Admin → SEO shows sitemap and robots status,
+  verification codes and a content-health audit (missing/short/long/duplicate titles and
+  descriptions, missing sharing images, images without alt text). Structured data: organisation,
+  Service, BlogPosting (with related services), BreadcrumbList and FAQPage.
+- **Insights:** articles can be linked to services; the article shows those services and a
+  consultation prompt, and each service page lists its related articles.
+- **Admin → Integrations:** GA4 tracking (loaded only after cookie consent), Search Console
+  verification test, and a read-only Google OAuth connection (client ID/secret encrypted, refresh
+  token encrypted, revocable). Setup steps and the redirect URI are shown on the page.
+- **Admin → Analytics:** real GA4 figures (users, sessions, views, engagement, trend, top pages,
+  sources, countries, devices, browsers, new vs returning) and Search Console figures (clicks,
+  impressions, CTR, position, trend, queries, pages) for selectable ranges, cached 15 minutes
+  with a manual refresh. Without a connection it shows “Not connected” — never sample numbers.
+
 ## Security
 
 - **Sign-in:** e-mail + password (Argon2id). A 6-digit e-mailed code is added **only when outgoing

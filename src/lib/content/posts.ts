@@ -93,32 +93,41 @@ export const latestPosts = unstable_cache(
 
 export const getPost = unstable_cache(
   async (slug: string, locale: Locale) => {
-    const p = await db.blogPost.findFirst({ where: { slug, ...visibleWhere(locale) }, include: { category: true } });
+    const p = await db.blogPost.findFirst({
+      where: { slug, ...visibleWhere(locale) },
+      include: { category: true, services: { where: { status: "PUBLISHED", deletedAt: null }, orderBy: { order: "asc" }, select: { id: true, slug: true, title: true, summary: true, icon: true } } },
+    });
     if (!p) return null;
     return {
       ...toCard({ ...p, category: p.category }),
       content: p.content as L,
-      seo: p.seo as { title?: L; description?: L; ogImageId?: string | null } | null,
+      seo: p.seo as { title?: L; description?: L; ogTitle?: L; ogDescription?: L; ogImageId?: string | null; noindex?: boolean } | null,
       categoryId: p.categoryId,
       updatedAt: p.updatedAt.toISOString(),
+      services: p.services.map((s) => ({ id: s.id, slug: s.slug, title: s.title as L, summary: s.summary as L | null, icon: s.icon })),
     };
   },
   ["post"],
   { tags: [CONTENT_TAG], revalidate: SCHEDULE_WINDOW },
 );
 
-export async function relatedPosts(post: { id: string; categoryId: string | null; tags: string[] }, locale: Locale, limit = 3) {
+export async function relatedPosts(post: { id: string; categoryId: string | null; tags: string[]; services?: { id: string }[] }, locale: Locale, limit = 3) {
+  const serviceIds = (post.services ?? []).map((s) => s.id);
   const rows = await db.blogPost.findMany({
     where: {
       ...visibleWhere(locale),
       id: { not: post.id },
-      OR: [...(post.categoryId ? [{ categoryId: post.categoryId }] : []), ...(post.tags.length ? [{ tags: { hasSome: post.tags } }] : [])],
+      OR: [
+        ...(serviceIds.length ? [{ services: { some: { id: { in: serviceIds } } } }] : []),
+        ...(post.categoryId ? [{ categoryId: post.categoryId }] : []),
+        ...(post.tags.length ? [{ tags: { hasSome: post.tags } }] : []),
+      ],
     },
     orderBy: { publishedAt: "desc" },
     take: limit,
     select: cardSelect,
   });
-  if (rows.length >= limit || (!post.categoryId && !post.tags.length)) return rows.map(toCard);
+  if (rows.length >= limit || (!post.categoryId && !post.tags.length && !serviceIds.length)) return rows.map(toCard);
   return [...rows.map(toCard), ...(await latestPosts(locale, limit + 1, post.id)).filter((p) => !rows.some((r) => r.id === p.id))].slice(0, limit);
 }
 
@@ -130,9 +139,24 @@ export const getBlogCategories = unstable_cache(
 
 export const getPublishedPostIndex = unstable_cache(
   async () =>
-    (await db.blogPost.findMany({ where: { status: "PUBLISHED", deletedAt: null, publishedAt: { lte: new Date() } }, select: { slug: true, title: true, updatedAt: true } })).map((p) => ({
-      slug: p.slug, title: p.title as L, updatedAt: p.updatedAt.toISOString(),
-    })),
+    (await db.blogPost.findMany({ where: { status: "PUBLISHED", deletedAt: null, publishedAt: { lte: new Date() } }, select: { slug: true, title: true, updatedAt: true, seo: true } }))
+      .filter((p) => !(p.seo as { noindex?: boolean } | null)?.noindex)
+      .map((p) => ({ slug: p.slug, title: p.title as L, updatedAt: p.updatedAt.toISOString() })),
   ["post-index"],
+  { tags: [CONTENT_TAG], revalidate: SCHEDULE_WINDOW },
+);
+
+/** Published articles linked to a service (for the service page's "Related insights"). */
+export const postsForService = unstable_cache(
+  async (serviceId: string, locale: Locale, limit = 3) =>
+    (
+      await db.blogPost.findMany({
+        where: { ...visibleWhere(locale), services: { some: { id: serviceId } } },
+        orderBy: { publishedAt: "desc" },
+        take: limit,
+        select: cardSelect,
+      })
+    ).map(toCard),
+  ["posts-for-service"],
   { tags: [CONTENT_TAG], revalidate: SCHEDULE_WINDOW },
 );

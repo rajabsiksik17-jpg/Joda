@@ -7,7 +7,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Dialog } from "radix-ui";
 import {
   Building2, ChartColumn, CircleHelp, ExternalLink, FileText, Handshake, History, Images, Inbox, Languages, Layers, LayoutDashboard, LogOut,
-  Mail, Menu, Newspaper, Phone, Quote, Search, Settings, ShieldCheck, UserCog, UserRound, Users, X, CalendarCheck, type LucideIcon,
+  Mail, Menu, Newspaper, Phone, Quote, Search, Settings, ShieldCheck, UserCog, UserRound, Users, X, CalendarCheck, BarChart3, Plug, type LucideIcon,
 } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import { cn } from "@/lib/cn";
@@ -18,7 +18,7 @@ import { CommandPalette } from "./command-palette";
 import { Menu as DMenu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "./ui";
 
 const ICONS: Record<string, LucideIcon> = {
-  LayoutDashboard, FileText, Layers, Newspaper, Images, Users, Handshake, Building2, Quote, CircleHelp, ChartColumn, Menu, Phone, Search, Settings, Inbox, UserCog, ShieldCheck, Mail, History, CalendarCheck,
+  LayoutDashboard, FileText, Layers, Newspaper, Images, Users, Handshake, Building2, Quote, CircleHelp, ChartColumn, Menu, Phone, Search, Settings, Inbox, UserCog, ShieldCheck, Mail, History, CalendarCheck, BarChart3, Plug,
 };
 
 type Props = { nav: AdminNavGroup[]; badges: { unread: number; consultations: number }; user: { name: string; email: string; role: string }; locale: Locale; children: React.ReactNode };
