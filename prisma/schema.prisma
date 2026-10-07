@@ -1,0 +1,621 @@
+// Quality Experts — website & CMS data model.
+//
+// Localized text is stored as JSON objects keyed by locale, e.g. { "ar": "...", "en": "..." }.
+// Adding a language later therefore requires no schema migration.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────── Identity & access ───────────────────────────────
+
+model Role {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        Json
+  description Json?
+  /// Permission keys, see src/lib/auth/permissions.ts
+  permissions String[]
+  /// System roles cannot be deleted (their permissions remain editable except super_admin)
+  isSystem    Boolean  @default(false)
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id               String           @id @default(cuid())
+  email            String           @unique
+  name             String
+  passwordHash     String
+  roleId           String
+  role             Role             @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  isActive         Boolean          @default(true)
+  preferredLocale  String           @default("ar")
+  failedLoginCount Int              @default(0)
+  lockedUntil      DateTime?
+  lastLoginAt      DateTime?
+  passwordChangedAt DateTime?
+  sessions         Session[]
+  trustedDevices   TrustedDevice[]
+  challenges       LoginChallenge[]
+  auditLogs        AuditLog[]
+  media            Media[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([roleId])
+}
+
+/// A browser that completed e-mail verification and may skip it on later sign-ins.
+model TrustedDevice {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// SHA-256 of the device token stored in a long-lived cookie
+  tokenHash  String   @unique
+  label      String?
+  ip         String?
+  userAgent  String?
+  expiresAt  DateTime
+  lastUsedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  /// SHA-256 of the opaque session token stored in the cookie
+  tokenHash  String   @unique
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// A password-verified login attempt waiting for its email one-time code.
+model LoginChallenge {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// HMAC-SHA256 of the OTP code (never stored in clear text)
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  sendCount  Int       @default(1)
+  lastSentAt DateTime  @default(now())
+  consumedAt DateTime?
+  ip         String?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Fixed-window rate limiting shared by every app instance.
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  /// Snapshot of the actor e-mail (kept even if the user is deleted)
+  actorEmail String?
+  action     String
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+}
+
+// ─────────────────────────────── Media ───────────────────────────────
+
+/// File contents when STORAGE_DRIVER="db" (default): uploads live in the database, so a single
+/// database backup/restore moves the whole site, media included.
+model MediaBlob {
+  key       String   @id
+  data      Bytes
+  size      Int
+  createdAt DateTime @default(now())
+}
+
+model Media {
+  id           String   @id @default(cuid())
+  /// Storage key, served at /uploads/<key>
+  key          String   @unique
+  originalName String
+  mimeType     String
+  size         Int
+  width        Int?
+  height       Int?
+  alt          Json?
+  caption      Json?
+  folder       String?
+  uploadedById String?
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([mimeType])
+}
+
+// ─────────────────────────────── Pages & page builder ───────────────────────────────
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PageKind {
+  HOME
+  STANDARD
+  LEGAL
+}
+
+model Page {
+  id                    String         @id @default(cuid())
+  /// URL path without locale, e.g. "about" or "industries/energy". The home page uses "home".
+  slug                  String         @unique
+  kind                  PageKind       @default(STANDARD)
+  title                 Json
+  /// { title: L, description: L, ogImageId?: string, noindex?: boolean }
+  seo                   Json?
+  status                ContentStatus  @default(DRAFT)
+  publishedAt           DateTime?
+  /// What the public sees: { title, seo, sections[] } frozen at publish time
+  publishedSnapshot     Json?
+  hasUnpublishedChanges Boolean        @default(true)
+  sections              PageSection[]
+  revisions             PageRevision[]
+  menuItems             MenuItem[]
+  createdById           String?
+  updatedById           String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  deletedAt             DateTime?
+
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model PageSection {
+  id        String   @id @default(cuid())
+  pageId    String
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  type      String
+  order     Int
+  visible   Boolean  @default(true)
+  /// Section content, validated per section type
+  data      Json
+  /// Presentation: { theme, spacing, anchor, hideOn }
+  settings  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([pageId, order])
+}
+
+model PageRevision {
+  id          String   @id @default(cuid())
+  pageId      String
+  page        Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  snapshot    Json
+  note        String?
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  @@index([pageId, createdAt])
+}
+
+/// Saved, reusable section presets
+model SectionTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  data        Json
+  settings    Json?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─────────────────────────────── Services ───────────────────────────────
+
+model ServiceCategory {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        Json
+  description Json?
+  order       Int       @default(0)
+  services    Service[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Service {
+  id           String           @id @default(cuid())
+  slug         String           @unique
+  order        Int              @default(0)
+  title        Json
+  /// One-line positioning used on cards
+  summary      Json?
+  /// Official introductory paragraph
+  description  Json?
+  /// Lucide icon key, see src/lib/icons.ts
+  icon         String           @default("sparkles")
+  imageId      String?
+  /// [{ title: L, items: L[] }]
+  capabilities Json             @default("[]")
+  /// Optional methodology: [{ title: L, text: L }]
+  steps        Json             @default("[]")
+  /// Optional CTA label override
+  ctaLabel     Json?
+  /// Why the service matters (explanatory, derived from official content)
+  whyItMatters Json?
+  /// Intended outcomes: [{ icon, title: L, text: L }]
+  outcomes     Json             @default("[]")
+  /// Hero illustration key (see src/components/services/service-visual.tsx)
+  visual       String           @default("auto")
+  /// Capability presentation: grid | tabs | matrix | timeline
+  capabilityLayout String       @default("grid")
+  seo          Json?
+  status       ContentStatus    @default(DRAFT)
+  publishedAt  DateTime?
+  featured     Boolean          @default(false)
+  categoryId   String?
+  category     ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  related      Service[]        @relation("RelatedServices")
+  relatedOf    Service[]        @relation("RelatedServices")
+  faqs         Faq[]
+  menuItems    MenuItem[]
+  createdById  String?
+  updatedById  String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  deletedAt    DateTime?
+
+  @@index([status, order])
+  @@index([categoryId])
+}
+
+// ─────────────────────────────── People & credibility ───────────────────────────────
+
+model TeamMember {
+  id           String   @id @default(cuid())
+  name         Json
+  position     Json
+  /// Short biography (cards)
+  bio          Json?
+  /// Full biography (profile view)
+  fullBio      Json?
+  department   Json?
+  /// Areas of expertise: L[]
+  expertise    Json     @default("[]")
+  /// Leadership / spokesperson message, localized
+  message      Json?
+  photoId      String?
+  isLeadership Boolean  @default(false)
+  /// Featured person (e.g. shown as the main leadership message)
+  featured     Boolean  @default(false)
+  linkedinUrl  String?
+  /// Additional profiles: [{ platform, url }]
+  socials      Json     @default("[]")
+  email        String?
+  phone        String?
+  order        Int      @default(0)
+  /// Active on the website
+  visible      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([visible, order])
+}
+
+model Partner {
+  id          String   @id @default(cuid())
+  name        Json
+  description Json?
+  logoId      String?
+  /// Background the logo needs for legibility: light | dark | muted
+  logoTone    String   @default("light")
+  url         String?
+  isStrategic Boolean  @default(false)
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([visible, order])
+}
+
+model ClientGroup {
+  id        String   @id @default(cuid())
+  name      Json
+  order     Int      @default(0)
+  clients   Client[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Client {
+  id        String       @id @default(cuid())
+  name      Json
+  logoId    String?
+  url       String?
+  groupId   String?
+  group     ClientGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  featured  Boolean      @default(false)
+  order     Int          @default(0)
+  visible   Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([groupId, order])
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  quote     Json
+  author    Json
+  position  Json?
+  company   Json?
+  photoId   String?
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  Json
+  answer    Json
+  group     String?
+  serviceId String?
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([serviceId])
+}
+
+model Stat {
+  id        String   @id @default(cuid())
+  /// Display value, e.g. "+100"
+  value     String
+  label     Json
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────── Insights (blog) ───────────────────────────────
+
+model BlogCategory {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  name        Json
+  description Json?
+  order       Int        @default(0)
+  posts       BlogPost[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model BlogPost {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       Json
+  excerpt     Json?
+  /// Sanitized HTML per locale
+  content     Json
+  coverId     String?
+  categoryId  String?
+  category    BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags        String[]
+  authorName  String?
+  status      ContentStatus @default(DRAFT)
+  /// Publication time; a future date schedules the post
+  publishedAt DateTime?
+  featured    Boolean       @default(false)
+  seo         Json?
+  createdById String?
+  updatedById String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+
+  @@index([status, publishedAt])
+  @@index([categoryId])
+}
+
+// ─────────────────────────────── Contact ───────────────────────────────
+
+enum MessageStatus {
+  NEW
+  READ
+  ARCHIVED
+}
+
+model ContactMessage {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  subject   String?
+  service   String?
+  message   String
+  locale    String
+  consent   Boolean       @default(false)
+  status    MessageStatus @default(NEW)
+  readAt    DateTime?
+  notes     String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+enum ConsultationStatus {
+  PENDING
+  CONTACTED
+  COMPLETED
+  ARCHIVED
+}
+
+model ConsultationRequest {
+  id              String             @id @default(cuid())
+  name            String
+  company         String?
+  email           String
+  /// ISO 3166-1 alpha-2 of the phone number
+  phoneCountry    String
+  phoneDialCode   String
+  phoneNumber     String
+  /// Normalised E.164 number
+  phoneE164       String
+  /// Country of the organisation (ISO alpha-2)
+  country         String?
+  serviceId       String?
+  /// Service title at submission time (kept if the service is renamed or removed)
+  serviceTitle    String?
+  preferredContact String            @default("email")
+  message         String
+  locale          String
+  sourcePage      String?
+  consent         Boolean            @default(false)
+  status          ConsultationStatus @default(PENDING)
+  notes           String?
+  contactedAt     DateTime?
+  completedAt     DateTime?
+  ip              String?
+  userAgent       String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+enum ChannelType {
+  PHONE
+  EMAIL
+  WHATSAPP
+  ADDRESS
+  FAX
+  OTHER
+}
+
+model ContactChannel {
+  id        String      @id @default(cuid())
+  type      ChannelType
+  label     Json?
+  value     String
+  /// Optional explicit link; derived from type/value when empty
+  href      String?
+  isPrimary Boolean     @default(false)
+  showInFooter Boolean  @default(true)
+  order     Int         @default(0)
+  visible   Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model SocialLink {
+  id        String   @id @default(cuid())
+  platform  String
+  url       String
+  label     String?
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────── Navigation ───────────────────────────────
+
+enum LinkType {
+  PAGE
+  SERVICE
+  INTERNAL
+  EXTERNAL
+  SERVICES_MENU
+}
+
+model Menu {
+  id        String     @id @default(cuid())
+  key       String     @unique
+  name      String
+  items     MenuItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model MenuItem {
+  id           String     @id @default(cuid())
+  menuId       String
+  menu         Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parentId     String?
+  parent       MenuItem?  @relation("MenuTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children     MenuItem[] @relation("MenuTree")
+  label        Json
+  description  Json?
+  linkType     LinkType   @default(INTERNAL)
+  pageId       String?
+  page         Page?      @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  serviceId    String?
+  service      Service?   @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  /// Internal path (without locale) or absolute external URL
+  url          String?
+  openInNewTab Boolean    @default(false)
+  visible      Boolean    @default(true)
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([menuId, parentId, order])
+}
+
+// ─────────────────────────────── Settings ───────────────────────────────
+
+/// Grouped site configuration. Secret values inside (SMTP/IMAP passwords) are AES-256-GCM encrypted.
+model Setting {
+  key         String   @id
+  value       Json
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+}
