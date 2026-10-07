@@ -85,6 +85,11 @@ test.describe("public website", () => {
     await expect(dialog.getByRole("link", { name: "Governance" })).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
+    // After scrolling the header turns solid (backdrop blur); the panel must still cover the screen.
+    await page.evaluate(() => window.scrollTo(0, 1500));
+    await page.getByRole("button", { name: "Menu" }).click();
+    const box = await dialog.boundingBox();
+    expect(box?.height).toBeGreaterThan((page.viewportSize()?.height ?? 0) * 0.9);
   });
 
   test("serves SEO essentials", async ({ request }) => {

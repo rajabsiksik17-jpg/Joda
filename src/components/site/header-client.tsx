@@ -130,6 +130,7 @@ export function HeaderClient({ locale, siteName, tagline, items, groups, ordered
   const servicesHref = items.find((i) => i.isServicesMenu)?.href || `/${locale}/services`;
 
   return (
+    <>
     <header
       ref={headerRef}
       className={cn(
@@ -282,7 +283,11 @@ export function HeaderClient({ locale, siteName, tagline, items, groups, ordered
         </div>
       </div>
 
-      {/* Mobile navigation: a dedicated full-screen experience rather than a shrunken desktop menu */}
+    </header>
+
+      {/* Mobile navigation: a dedicated full-screen experience rather than a shrunken desktop menu.
+          Rendered outside <header>: the scrolled header uses backdrop-filter, which would otherwise
+          make this fixed panel size itself to the header instead of the viewport. */}
       <div
         id={`${megaId}-mobile`}
         ref={mobilePanelRef}
@@ -373,8 +378,8 @@ export function HeaderClient({ locale, siteName, tagline, items, groups, ordered
           </div>
           <div className="mt-10 space-y-3 text-white/75">
             {contact.phone && (
-              <a href={contact.phone.href} className="flex items-center gap-3 hover:text-white" dir="ltr">
-                <Phone className="size-4 text-sky" aria-hidden /> <span>{contact.phone.value}</span>
+              <a href={contact.phone.href} className="flex items-center gap-3 hover:text-white">
+                <Phone className="size-4 text-sky" aria-hidden /> <span dir="ltr">{contact.phone.value}</span>
               </a>
             )}
             {contact.email && (
@@ -385,7 +390,7 @@ export function HeaderClient({ locale, siteName, tagline, items, groups, ordered
           </div>
         </nav>
       </div>
-    </header>
+    </>
   );
 }
 
