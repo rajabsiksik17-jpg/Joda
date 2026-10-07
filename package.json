@@ -5,7 +5,7 @@
   "description": "Corporate website and CMS for Quality Experts / خبراء الجودة للاستشارات والتدريب",
   "scripts": {
     "dev": "next dev --port 3010",
-    "build": "next build --webpack",
+    "build": "npm run db:prepare && next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -20,7 +20,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "build:only": "next build --webpack",
+    "db:prepare": "prisma migrate deploy && tsx --conditions=react-server prisma/seed.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -8,9 +8,10 @@ import "dotenv/config";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { normalizeDatabaseUrl } from "../src/lib/database-url";
 import { PrismaClient } from "../src/generated/prisma/client";
 
-const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
+const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: normalizeDatabaseUrl(process.env.DATABASE_URL!) }) });
 const root = path.resolve(process.cwd(), process.env.UPLOAD_DIR || "./storage/uploads");
 
 async function main() {

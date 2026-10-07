@@ -309,6 +309,15 @@ npm start
 Running several instances: sessions, rate limits, uploads and the content cache are all
 DB/Next-backed, so instances can be added behind a load balancer.
 
+### Hosting panels (Hostinger, etc.)
+
+`npm run build` prepares the database before building: it applies pending migrations and, only if
+the database has no content yet, creates the initial content and the first Super Admin
+(`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`). Re-deploys never overwrite edited content. Use
+`npm run build:only` to build without touching the database. Remote database URLs get SSL
+automatically; a Supabase transaction-pooler URL (port 6543) is switched to the session pooler
+(5432) for migrations.
+
 ### Moving to another server
 
 Uploaded media (images and videos) is stored **in the database** by default (`STORAGE_DRIVER=db`),

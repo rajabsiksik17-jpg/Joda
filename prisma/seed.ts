@@ -9,6 +9,7 @@ import { randomBytes } from "node:crypto";
 import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { normalizeDatabaseUrl } from "../src/lib/database-url";
 import { hash } from "@node-rs/argon2";
 import { PrismaClient, type Prisma } from "../src/generated/prisma/client";
 import { DEFAULT_ROLES } from "../src/lib/auth/permissions";
@@ -19,7 +20,7 @@ import { defaultSectionData, defaultSectionSettings } from "../src/lib/sections/
 import { CEO, CLIENT_GROUPS, COMPANY, CONTACT, COOKIE_HTML, MARKETS, PARTNERS, PRIVACY_HTML, SERVICE_CATEGORIES, STATS } from "./seed-content";
 import { SERVICES } from "./seed-services";
 
-const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
+const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: normalizeDatabaseUrl(process.env.DATABASE_URL!) }) });
 const force = process.argv.includes("--force");
 type L = { ar: string; en: string };
 const l = (en: string, ar: string): L => ({ en, ar });

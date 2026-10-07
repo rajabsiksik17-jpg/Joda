@@ -9,10 +9,11 @@
 import "dotenv/config";
 import { randomBytes } from "node:crypto";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { normalizeDatabaseUrl } from "../src/lib/database-url";
 import { hash } from "@node-rs/argon2";
 import { PrismaClient } from "../src/generated/prisma/client";
 
-const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
+const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: normalizeDatabaseUrl(process.env.DATABASE_URL!) }) });
 
 function arg(name: string) {
   const i = process.argv.indexOf(`--${name}`);
