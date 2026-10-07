@@ -53,7 +53,7 @@ export function TeamDirectory({ people, locale, labels, layout = "grid", dark = 
       ) : (
         <>
           {spotlight && <SoloCard person={spotlight} locale={locale} labels={labels} onOpen={open} dark={dark} />}
-          <ul className={cn("grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", spotlight && "mt-12")}>
+          <ul className={cn("grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4", spotlight && "mt-6 sm:mt-8")}>
             {rest.map((p, i) => (
               <li key={p.id} data-reveal style={{ "--reveal-delay": `${(i % 4) * 80}ms` } as React.CSSProperties}>
                 <PersonCard person={p} locale={locale} labels={labels} onOpen={open} dark={dark} />
@@ -105,47 +105,83 @@ function PersonCard({ person, locale, labels, onOpen, dark }: { person: TeamPers
           </span>
         )}
       </div>
-      <span className={cn("heading mt-5 block text-lg", dark ? "text-white" : "text-ink")}>{person.name}</span>
-      <span className={cn("mt-0.5 block", dark ? "text-white/70" : "text-muted")}>{person.position}</span>
-      {person.department && <span className="mt-2 inline-block text-xs font-semibold tracking-wide text-tech-600 uppercase rtl:tracking-normal">{person.department}</span>}
+      <span className="block p-4 sm:p-5">
+        <span className={cn("heading block t-card", dark ? "text-white" : "text-ink")}>{person.name}</span>
+        <span className={cn("mt-1 block text-sm font-medium", dark ? "text-white/70" : "text-tech-600")}>{person.position}</span>
+        {person.department && <span className={cn("mt-3 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold", dark ? "bg-white/10 text-sky" : "bg-surface text-muted ring-1 ring-line")}>{person.department}</span>}
+      </span>
     </>
   );
-  if (!interactive) return <div className="group">{body}</div>;
+  const card = cn("card-premium group block h-full w-full text-start", dark && "!border-white/10 !bg-white/[0.04]");
+  if (!interactive) return <div className={card}>{body}</div>;
   return (
-    <button type="button" onClick={() => onOpen(person)} className="group block w-full text-start" aria-haspopup="dialog" aria-label={`${labels.viewProfile}: ${person.name}`}>
+    <button type="button" onClick={() => onOpen(person)} className={card} aria-haspopup="dialog" aria-label={`${labels.viewProfile}: ${person.name}`}>
       {body}
     </button>
   );
 }
 
 function SoloCard({ person, locale, labels, onOpen, dark }: { person: TeamPerson; locale: Locale; labels: TeamLabels; onOpen: (p: TeamPerson) => void; dark: boolean }) {
+  // Short introduction: biography first, otherwise the opening of the leadership message.
+  const intro = person.bio || (person.message ? paragraphs(person.message)[0] : "");
+  const excerpt = intro.length > 260 ? `${intro.slice(0, 260).replace(/\s+\S*$/, "")}…` : intro;
   return (
-    <div className={cn("group grid overflow-hidden border md:grid-cols-12", dark ? "border-white/15 bg-white/5" : "border-line bg-white shadow-soft")} data-reveal>
-      <div className="md:col-span-5" data-reveal="clip">
-        <Portrait person={person} locale={locale} sizes="(min-width:768px) 40vw, 100vw" className="aspect-[5/4] h-full sm:aspect-[4/5] md:aspect-auto md:min-h-96" />
+    <article className={cn("card-premium group grid md:grid-cols-12", dark && "!border-white/10 !bg-white/[0.04]")} data-reveal>
+      {/* Portrait on a navy stage with the identity's square motif */}
+      <div className="relative overflow-hidden bg-navy md:col-span-5" data-reveal="clip">
+        <div className="relative aspect-[5/4] sm:aspect-[4/3] md:aspect-auto md:h-full md:min-h-[26rem]">
+          <div className="grid-texture-dark absolute inset-0 opacity-70" aria-hidden />
+          <div className="absolute -start-16 -top-16 size-64 rounded-full bg-tech-600/40 blur-3xl" aria-hidden />
+          <div className="absolute end-5 top-5 grid grid-cols-3 gap-1.5" aria-hidden>
+            {Array.from({ length: 9 }, (_, k) => <span key={k} className={cn("size-2", k % 3 === 0 ? "bg-sky" : k % 2 ? "bg-tech-600" : "bg-white/20")} />)}
+          </div>
+          {person.photo ? (
+            <MediaImage asset={person.photo} locale={locale} alt={person.name} fill sizes="(min-width:768px) 40vw, 100vw" className="object-contain object-bottom transition-transform duration-1000 ease-out group-hover:scale-[1.03]" />
+          ) : (
+            <span className="absolute inset-0 grid place-items-center"><span className="display text-7xl text-white/20" aria-hidden>{initials(person.name)}</span></span>
+          )}
+          <span className="absolute bottom-0 h-1.5 w-1/2 bg-tech-600 ltr:left-0 rtl:right-0" aria-hidden />
+        </div>
       </div>
-      <div className="flex flex-col justify-center gap-3 p-6 sm:gap-4 sm:p-8 md:col-span-7 lg:p-12">
-        {person.department && <p className="eyebrow">{person.department}</p>}
-        <h3 className={cn("display t-title", dark ? "text-white" : "text-ink")}>{person.name}</h3>
-        <p className={dark ? "text-white/75" : "text-muted"}>
-          {person.position}
-        </p>
-        {person.bio && <p className={cn("lede", dark && "text-white/80")}>{person.bio}</p>}
+      <div className="relative flex flex-col justify-center gap-4 p-6 sm:p-10 md:col-span-7 lg:p-14">
+        <span className={cn("inline-flex items-center gap-2 self-start rounded-full px-3 py-1 text-xs font-semibold ring-1", dark ? "bg-white/10 text-sky ring-white/15" : "bg-sky-50 text-tech-600 ring-tech-600/15")}>
+          <span className="size-1.5 rounded-full bg-current" aria-hidden />
+          {person.department || (person.isLeadership ? labels.leadership : person.position)}
+        </span>
+        <div>
+          <h3 className={cn("display t-title", dark ? "text-white" : "text-ink")}>{person.name}</h3>
+          <p className={cn("mt-1.5 font-medium", dark ? "text-white/70" : "text-tech-600")}>{person.position}</p>
+        </div>
+        {excerpt && (
+          <p className={cn("relative border-s-2 ps-4 leading-[1.9] sm:ps-5", dark ? "border-sky/60 text-white/80" : "border-tech-600/50 text-body")}>{excerpt}</p>
+        )}
         {person.expertise.length > 0 && (
           <ul className="flex flex-wrap gap-2">
             {person.expertise.slice(0, 5).map((e) => (
-              <li key={e} className={cn("rounded-full border px-3 py-1 text-sm", dark ? "border-white/20 text-white/85" : "border-line-strong text-ink")}>{e}</li>
+              <li key={e} className={cn("rounded-full px-3 py-1 text-sm", dark ? "bg-white/10 text-white/85" : "bg-surface text-ink ring-1 ring-line")}>{e}</li>
             ))}
           </ul>
         )}
-        {hasProfile(person) && (
-          <button type="button" onClick={() => onOpen(person)} className={cn("btn mt-2 self-start", dark ? "btn-outline-light" : "btn-outline")} aria-haspopup="dialog">
-            {labels.viewProfile}
-            <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
-          </button>
-        )}
+        <div className={cn("mt-2 flex flex-wrap items-center gap-3 border-t pt-5", dark ? "border-white/10" : "border-line")}>
+          {hasProfile(person) && (
+            <button type="button" onClick={() => onOpen(person)} className="btn btn-primary !min-h-11" aria-haspopup="dialog">
+              {labels.viewProfile}
+              <ArrowUpRight className="size-4 rtl:-scale-x-100" aria-hidden />
+            </button>
+          )}
+          {person.links.slice(0, 4).map((l) => (
+            <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className={cn("grid size-11 place-items-center rounded-full border transition-colors", dark ? "border-white/20 text-white hover:bg-white hover:text-navy" : "border-line-strong text-ink hover:border-navy hover:bg-navy hover:text-white")} aria-label={`${l.platform} — ${person.name}`}>
+              <SocialIcon platform={l.platform} className="size-4" />
+            </a>
+          ))}
+          {person.email && (
+            <a href={`mailto:${person.email}`} className={cn("grid size-11 place-items-center rounded-full border transition-colors", dark ? "border-white/20 text-white hover:bg-white hover:text-navy" : "border-line-strong text-ink hover:border-navy hover:bg-navy hover:text-white")} aria-label={`${labels.email}: ${person.email}`}>
+              <Mail className="size-4" aria-hidden />
+            </a>
+          )}
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
 

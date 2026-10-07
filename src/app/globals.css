@@ -371,3 +371,37 @@ html:has(dialog[open]) { overflow: hidden; }
 @keyframes fab-ping { 0% { transform: scale(1); opacity: 0.55; } 80%, 100% { transform: scale(1.45); opacity: 0; } }
 .fab-ping { animation: fab-ping 2.4s cubic-bezier(0, 0, 0.2, 1) 1.5s 3 both; }
 @media (prefers-reduced-motion: reduce) { .fab-ping { display: none; } }
+
+/* ─────────────── Premium building blocks (stats, cards, partners, clients, forms) ─────────────── */
+@layer components {
+  /* Numbers rendered in the brand gradient */
+  .text-gradient-brand { background: linear-gradient(135deg, var(--color-navy) 15%, var(--color-tech-600) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .text-gradient-sky { background: linear-gradient(135deg, #ffffff 30%, var(--color-sky) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* Card with a brand accent line that sweeps in on hover */
+  .card-premium { position: relative; overflow: hidden; border: 1px solid var(--color-line); background: #fff; transition: transform 0.45s var(--ease-out-expo), box-shadow 0.45s var(--ease-out-expo), border-color 0.3s; }
+  .card-premium::before { content: ""; position: absolute; inset-inline: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--color-tech-600), var(--color-sky)); transform: scaleX(0); transform-origin: left; transition: transform 0.6s var(--ease-out-expo); }
+  [dir="rtl"] .card-premium::before { transform-origin: right; background: linear-gradient(270deg, var(--color-tech-600), var(--color-sky)); }
+  .card-premium:hover, .card-premium:focus-within { border-color: rgb(18 122 166 / 0.35); box-shadow: var(--shadow-lift); transform: translateY(-3px); }
+  .card-premium:hover::before, .card-premium:focus-within::before { transform: scaleX(1); }
+
+  /* Square icon tile in the brand gradient */
+  .icon-tile { display: grid; place-items: center; flex-shrink: 0; color: #fff; background: linear-gradient(135deg, var(--color-navy), var(--color-tech-600)); box-shadow: 0 10px 22px -12px rgb(18 122 166 / 0.8); transition: transform 0.45s var(--ease-out-expo); }
+  .group:hover .icon-tile { transform: rotate(-4deg) scale(1.05); }
+  .icon-tile-soft { display: grid; place-items: center; flex-shrink: 0; color: var(--color-tech-600); background: var(--color-sky-50); box-shadow: inset 0 0 0 1px rgb(18 122 166 / 0.12); transition: background-color 0.3s, color 0.3s; }
+  .group:hover .icon-tile-soft { background: var(--color-tech-600); color: #fff; }
+
+  /* Form fields shared by the contact and consultation forms */
+  .field { width: 100%; min-height: 3rem; border: 1px solid var(--color-line-strong); background: #fff; color: var(--color-ink); padding-inline: 1rem; border-radius: 2px; transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s; }
+  .field::placeholder { color: rgb(107 119 133 / 0.7); }
+  .field:hover { border-color: rgb(7 31 63 / 0.35); }
+  .field:focus { outline: none; border-color: var(--color-tech-600); box-shadow: 0 0 0 4px rgb(22 143 193 / 0.14); }
+  .field[aria-invalid="true"] { border-color: #dc2626; box-shadow: 0 0 0 4px rgb(220 38 38 / 0.08); }
+  textarea.field { padding-block: 0.8rem; resize: vertical; line-height: 1.7; }
+  select.field { appearance: none; padding-inline-end: 2.5rem; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23127aa6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; }
+  [dir="rtl"] select.field { background-position: left 0.9rem center; }
+  .field-wrap { position: relative; }
+  .field-wrap > .field-icon { position: absolute; inset-inline-start: 0.95rem; top: 1.5rem; translate: 0 -50%; width: 1rem; height: 1rem; color: var(--color-muted); pointer-events: none; transition: color 0.2s; }
+  .field-wrap:focus-within > .field-icon { color: var(--color-tech-600); }
+  .field-wrap > .field { padding-inline-start: 2.6rem; }
+}

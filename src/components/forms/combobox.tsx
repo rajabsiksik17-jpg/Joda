@@ -139,15 +139,15 @@ export function Combobox({
           }
         }}
         className={cn(
-          "flex h-12 w-full items-center gap-3 border bg-white px-4 text-start text-ink transition-colors focus:ring-2 focus:ring-tech/25 focus:outline-none",
-          invalid ? "border-red-600" : open ? "border-tech" : "border-line-strong hover:border-ink/40",
+          "flex h-12 w-full items-center gap-3 rounded-[2px] border bg-white px-4 text-start text-ink transition-[border-color,box-shadow] duration-200 focus:outline-none focus-visible:shadow-[0_0_0_4px_rgb(22_143_193/0.14)]",
+          invalid ? "border-red-600 shadow-[0_0_0_4px_rgb(220_38_38/0.08)]" : open ? "border-tech-600 shadow-[0_0_0_4px_rgb(22_143_193/0.14)]" : "border-line-strong hover:border-ink/35",
           className,
         )}
       >
         <span className={cn("flex min-w-0 flex-1 items-center gap-2.5 truncate", !selected && "text-muted/80")}>
           {selected ? (renderValue ? renderValue(selected) : <>{selected.leading}<span className="truncate">{selected.label}</span></>) : placeholder}
         </span>
-        <ChevronDown className={cn("size-4 shrink-0 text-muted transition-transform duration-300", open && "rotate-180")} aria-hidden />
+        <ChevronDown className={cn("size-4 shrink-0 text-tech-600 transition-transform duration-300", open && "rotate-180")} aria-hidden />
       </button>
 
       {open && (

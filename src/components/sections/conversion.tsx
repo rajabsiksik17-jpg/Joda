@@ -188,7 +188,8 @@ export async function ContactSection({ data, settings, ctx }: SectionProps<Conta
             </aside>
           )}
           {data.showForm && (
-            <div className={cn("border border-line bg-white p-5 shadow-soft sm:p-10", data.showChannels && "lg:col-span-8")} data-reveal>
+            <div className={cn("relative overflow-hidden border border-line bg-white p-5 shadow-soft sm:p-10", data.showChannels && "lg:col-span-8")} data-reveal>
+              <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-navy via-tech-600 to-sky rtl:bg-gradient-to-l" aria-hidden />
               <ContactForm
                 locale={locale}
                 token={issueFormToken()}
@@ -236,7 +237,8 @@ export async function ConsultationSection({ data, settings, ctx }: SectionProps<
       <div className="container-qe">
         {(tr(data.eyebrow, locale) || tr(data.title, locale)) && <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-8 lg:mb-12" />}
         <div className="grid gap-8 lg:grid-cols-12 lg:gap-10">
-          <div className="border border-line bg-white p-5 shadow-soft sm:p-10 lg:col-span-8" data-reveal>
+          <div className="relative overflow-hidden border border-line bg-white p-5 shadow-soft sm:p-10 lg:col-span-8" data-reveal>
+            <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-navy via-tech-600 to-sky rtl:bg-gradient-to-l" aria-hidden />
             <ConsultationForm
               locale={locale}
               token={issueFormToken()}
@@ -310,63 +312,64 @@ export async function ContactCardsSection({ data, settings, ctx }: SectionProps<
   const showSocial = data.showSocial !== false && chrome.socials.length > 0;
   if (!cards.length && !address && !hours && !showSocial && !hasCta) return null;
 
-  // Phones: compact icon + text rows. Larger screens: tall cards.
-  const tile = "flex h-full items-center gap-4 border border-line bg-white p-4 sm:block sm:p-6";
-  const iconBox = "grid size-11 shrink-0 place-items-center rounded-sm bg-sky-50 text-tech-600 transition-colors duration-300 sm:size-12";
-  const labelCls = "block text-xs text-muted sm:mt-8 sm:text-sm";
-  const valueCls = "mt-0.5 block font-semibold break-words text-ink sm:mt-1 sm:text-lg";
+  const mapHref = contact.mapUrl || (contact.mapQuery || address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.mapLat !== null && contact.mapLng !== null ? `${contact.mapLat},${contact.mapLng}` : contact.mapQuery || address)}` : null);
+  const actionLabel: Record<string, string> = { PHONE: dict.actionCall, WHATSAPP: dict.actionChat, EMAIL: dict.actionEmail, FAX: "", ADDRESS: dict.actionMap, OTHER: dict.actionOpen };
+  type Card = { key: string; icon: React.ComponentType<{ className?: string }>; label: string; value: string; href: string | null; ltr: boolean; action: string; external: boolean; multiline?: boolean };
+  const items: Card[] = [
+    ...cards.map((c) => ({
+      key: c.id,
+      icon: CHANNEL_ICON[c.type as keyof typeof CHANNEL_ICON] ?? ArrowRight,
+      label: tr(c.label, locale) || typeLabel[c.type],
+      value: c.value,
+      href: channelHref(c.type, c.value, c.href),
+      ltr: ["PHONE", "WHATSAPP", "FAX"].includes(c.type),
+      action: actionLabel[c.type] ?? "",
+      external: c.type === "WHATSAPP",
+    })),
+    ...(address ? [{ key: "address", icon: MapPin, label: dict.address, value: address, href: mapHref, ltr: false, action: dict.actionMap, external: true }] : []),
+    ...(hours ? [{ key: "hours", icon: Clock, label: dict.workingHours, value: hours, href: null, ltr: false, action: "", external: false, multiline: true }] : []),
+  ];
 
   return (
     <SectionShell settings={settings}>
       <div className="container-qe">
         {(tr(data.eyebrow, locale) || tr(data.title, locale)) && <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} className="mb-8 lg:mb-12" />}
-        <ul className="grid gap-2.5 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
-          {cards.map((c, i) => {
-            const IconCmp = CHANNEL_ICON[c.type as keyof typeof CHANNEL_ICON] ?? ArrowRight;
-            const href = channelHref(c.type, c.value, c.href);
-            const ltr = ["PHONE", "WHATSAPP", "FAX"].includes(c.type);
+        <ul className={cn("grid gap-2.5 sm:grid-cols-2 sm:gap-4", items.length >= 4 ? "xl:grid-cols-4" : items.length === 3 ? "lg:grid-cols-3" : "")}>
+          {items.map((it, i) => {
             const inner = (
               <>
-                <span className={cn(iconBox, "group-hover:bg-tech-600 group-hover:text-white")}><IconCmp className="size-5" aria-hidden /></span>
-                <span className="min-w-0 flex-1">
-                  <span className={labelCls}>{tr(c.label, locale) || typeLabel[c.type]}</span>
-                  <span className={valueCls}><span dir={ltr ? "ltr" : undefined}>{c.value}</span></span>
+                {/* Phones: compact row. Larger screens: card with an action footer. */}
+                <span className="icon-tile size-11 rounded-sm sm:size-12"><it.icon className="size-5" aria-hidden /></span>
+                <span className="min-w-0 flex-1 sm:mt-6 sm:block">
+                  <span className="block text-xs font-medium text-muted sm:text-[0.8rem]">{it.label}</span>
+                  <span className={cn("mt-0.5 block font-semibold break-words text-ink sm:mt-1.5 sm:text-[1.08rem]", it.multiline && "whitespace-pre-line sm:text-base")}>
+                    <span dir={it.ltr ? "ltr" : undefined}>{it.value}</span>
+                  </span>
                 </span>
-                {href && <ArrowRight className="size-4 shrink-0 text-muted transition-all duration-300 group-hover:text-tech-600 sm:absolute sm:end-6 sm:top-7 rtl:-scale-x-100" aria-hidden />}
+                {it.href && (
+                  <>
+                    <ArrowRight className="size-4 shrink-0 text-muted transition-colors group-hover:text-tech-600 sm:hidden rtl:-scale-x-100" aria-hidden />
+                    <span className="mt-6 hidden items-center justify-between border-t border-line pt-4 text-sm font-semibold text-tech-600 sm:flex">
+                      {it.action}
+                      <span className="grid size-8 place-items-center rounded-full bg-sky-50 transition-all duration-300 group-hover:bg-tech-600 group-hover:text-white">
+                        <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" aria-hidden />
+                      </span>
+                    </span>
+                  </>
+                )}
               </>
             );
+            const cls = "card-premium group flex h-full items-center gap-4 p-4 sm:flex-col sm:items-stretch sm:p-6";
             return (
-              <li key={c.id} data-reveal style={{ "--reveal-delay": `${i * 70}ms` } as React.CSSProperties}>
-                {href ? (
-                  <a href={href} target={c.type === "WHATSAPP" ? "_blank" : undefined} rel="noopener noreferrer" className={cn(tile, "group relative transition-all duration-300 hover:-translate-y-1 hover:border-tech-600/50 hover:shadow-lift")}>{inner}</a>
+              <li key={it.key} data-reveal style={{ "--reveal-delay": `${i * 70}ms` } as React.CSSProperties}>
+                {it.href ? (
+                  <a href={it.href} target={it.external ? "_blank" : undefined} rel="noopener noreferrer" className={cls}>{inner}</a>
                 ) : (
-                  <div className={cn(tile, "group relative")}>{inner}</div>
+                  <div className={cls}>{inner}</div>
                 )}
               </li>
             );
           })}
-          {address && (
-            <li data-reveal>
-              <div className={tile}>
-                <span className={iconBox}><MapPin className="size-5" aria-hidden /></span>
-                <span className="min-w-0 flex-1">
-                  <span className={labelCls}>{dict.address}</span>
-                  <span className={valueCls}>{address}</span>
-                </span>
-              </div>
-            </li>
-          )}
-          {hours && (
-            <li data-reveal>
-              <div className={tile}>
-                <span className={iconBox}><Clock className="size-5" aria-hidden /></span>
-                <span className="min-w-0 flex-1">
-                  <span className={labelCls}>{dict.workingHours}</span>
-                  <span className={cn(valueCls, "whitespace-pre-line sm:text-base")}>{hours}</span>
-                </span>
-              </div>
-            </li>
-          )}
         </ul>
 
         {(showSocial || hasCta) && (

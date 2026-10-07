@@ -137,11 +137,8 @@ export function ConsultationForm({ locale, token, labels, formLabels, countries,
         {errText(errors[name]!)}
       </p>
     ) : null;
-  const inputCls = (name: string) =>
-    cn(
-      "w-full border bg-white px-4 text-ink transition-colors placeholder:text-muted/70 focus:outline-none focus:ring-2 focus:ring-tech/25",
-      errors[name] ? "border-red-600 focus:border-red-600" : "border-line-strong focus:border-tech",
-    );
+  // Shared ".field" style (see globals.css); invalid state comes from aria-invalid.
+  const inputCls = (_name: string) => "field";
   const a11y = (name: string) => ({ id: `cq-${name}`, "aria-invalid": errors[name] ? true : undefined, "aria-describedby": errors[name] ? `cq-${name}-error` : undefined });
   const label = (name: string, text: string, required = false, htmlFor = `cq-${name}`) => (
     <label htmlFor={htmlFor} className="mb-2 flex items-baseline gap-1 text-sm font-semibold text-ink">

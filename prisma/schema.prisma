@@ -414,6 +414,8 @@ model Stat {
   /// Display value, e.g. "+100"
   value     String
   label     Json
+  /// Icon key from the curated icon set
+  icon      String?
   order     Int      @default(0)
   visible   Boolean  @default(true)
   createdAt DateTime @default(now())

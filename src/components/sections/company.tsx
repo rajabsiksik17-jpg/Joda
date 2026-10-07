@@ -1,4 +1,4 @@
-import { ArrowUpRight, MapPin } from "lucide-react";
+import { ArrowUpRight, Handshake, MapPin } from "lucide-react";
 import { tr, type L } from "@/lib/i18n/localized";
 import { getSiteDictionary } from "@/lib/i18n/site-dictionary";
 import { getPartners, getStats, getTeam } from "@/lib/content/collections";
@@ -10,6 +10,7 @@ import { LeaderCarousel } from "../team/leader-carousel";
 import { TeamDirectory, type TeamPerson } from "../team/team-directory";
 import { Paragraphs, SectionHeading } from "../site/primitives";
 import { SectionShell, type SectionProps } from "./shell";
+import { Icon } from "@/lib/icons";
 
 // ───────────────────────── Statistics ─────────────────────────
 type StatsData = { eyebrow?: L; title?: L; text?: L; layout?: string; markets?: { name?: L }[] };
@@ -22,18 +23,21 @@ export async function StatsSection({ data, settings, ctx }: SectionProps<StatsDa
   const dict = getSiteDictionary(locale);
   const dark = settings.theme === "navy";
 
+  const iconFor = (icon: string | null, i: number) => icon || ["globe", "layers", "building", "award"][i % 4];
+
   if (data.layout === "band") {
     return (
       <SectionShell settings={settings} className="border-y border-line">
-        <div className="container-qe grid items-center gap-10 lg:grid-cols-12">
+        <div className="container-qe grid items-center gap-8 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-5">
             <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} />
           </div>
-          <dl className="grid grid-cols-3 gap-6 lg:col-span-7">
-            {stats.map((s) => (
-              <div key={s.id} className="flex flex-col-reverse border-s border-line ps-5" data-reveal>
-                <dt className="mt-2 text-sm text-muted sm:text-base">{tr(s.label, locale, true)}</dt>
-                <dd className="display t-page text-navy rtl:font-[family-name:var(--font-cairo)]"><CountUp value={s.value} /></dd>
+          <dl className={cn("grid grid-cols-3 overflow-hidden rounded-sm border lg:col-span-7", dark ? "border-white/10 bg-white/[0.04]" : "border-line bg-white shadow-soft")}>
+            {stats.map((s, i) => (
+              <div key={s.id} className={cn("group flex flex-col items-center gap-2 px-2 py-6 text-center not-first:border-s sm:items-start sm:px-6 sm:text-start", dark ? "border-white/10" : "border-line")} data-reveal style={{ "--reveal-delay": `${i * 90}ms` } as React.CSSProperties}>
+                <span className="icon-tile-soft size-9 rounded-sm sm:size-11"><Icon name={iconFor(s.icon, i)} className="size-4 sm:size-5" /></span>
+                <dt className={cn("order-3 text-xs leading-snug sm:text-sm", dark ? "text-white/65" : "text-muted")}>{tr(s.label, locale, true)}</dt>
+                <dd className={cn("display order-2 text-[1.6rem] leading-none sm:text-[2.4rem] rtl:font-[family-name:var(--font-cairo)]", dark ? "text-gradient-sky" : "text-gradient-brand")}><span dir="ltr"><CountUp value={s.value} /></span></dd>
               </div>
             ))}
           </dl>
@@ -44,15 +48,15 @@ export async function StatsSection({ data, settings, ctx }: SectionProps<StatsDa
 
   return (
     <SectionShell settings={settings}>
-      <div className="container-qe grid gap-14 lg:grid-cols-12 lg:gap-16">
+      <div className="container-qe grid gap-10 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-5">
           <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} />
           {markets.length > 0 && (
-            <div className="mt-10" data-reveal>
+            <div className="mt-8 lg:mt-10" data-reveal>
               <p className={cn("mb-4 text-sm font-semibold", dark ? "text-white" : "text-ink")}>{dict.markets}</p>
               <ul className="flex flex-wrap gap-2">
                 {markets.map((m) => (
-                  <li key={m} className={cn("inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium", dark ? "border-white/20 text-white" : "border-line-strong text-ink")}>
+                  <li key={m} className={cn("inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors", dark ? "border-white/20 text-white hover:bg-white/10" : "border-line-strong bg-white text-ink hover:border-tech-600 hover:text-tech-600")}>
                     <MapPin className="size-3.5 text-tech-600" aria-hidden />
                     {m}
                   </li>
@@ -61,23 +65,41 @@ export async function StatsSection({ data, settings, ctx }: SectionProps<StatsDa
             </div>
           )}
         </div>
-        <dl className="grid grid-cols-3 gap-2.5 sm:gap-5 lg:col-span-7 lg:grid-cols-1 xl:grid-cols-3 xl:self-end">
-          {stats.map((s, i) => (
-            <div
-              key={s.id}
-              className={cn("relative flex flex-col-reverse justify-between overflow-hidden p-4 hover-lift sm:p-7 xl:min-h-64", i === 0 ? "bg-navy text-white" : i === 1 ? "bg-tech-600 text-white" : dark ? "bg-white/10 text-white" : "bg-surface text-ink")}
-              data-reveal
-              style={{ "--reveal-delay": `${i * 90}ms` } as React.CSSProperties}
-            >
-              <dt className={cn("mt-2 text-xs leading-snug font-medium sm:mt-4 sm:text-base", i < 2 ? "text-white/80" : dark ? "text-white/75" : "text-body")}>{tr(s.label, locale, true)}</dt>
-              <dd className={cn("display t-stat rtl:font-[family-name:var(--font-cairo)]", i < 2 || dark ? "text-white" : "text-navy")}>
-                <CountUp value={s.value} />
-              </dd>
-              <span className="pointer-events-none absolute top-5 end-5 hidden grid-cols-3 gap-1 opacity-40 sm:grid" aria-hidden>
-                {Array.from({ length: 6 }, (_, k) => <span key={k} className={cn("size-1.5", k % 2 ? "bg-sky" : "bg-white/70")} />)}
-              </span>
-            </div>
-          ))}
+        <dl className="grid grid-cols-3 gap-2.5 sm:gap-4 lg:col-span-7 lg:grid-cols-1 xl:grid-cols-3 xl:self-end">
+          {stats.map((s, i) => {
+            const lead = i === 0;
+            return (
+              <div
+                key={s.id}
+                className={cn(
+                  "group relative flex flex-col overflow-hidden p-3.5 sm:p-7 lg:flex-row lg:items-center lg:gap-6 xl:flex-col xl:items-stretch xl:gap-0 xl:min-h-64",
+                  lead ? "bg-navy text-white shadow-lift" : dark ? "card-premium !border-white/10 !bg-white/[0.04]" : "card-premium",
+                )}
+                data-reveal
+                style={{ "--reveal-delay": `${i * 90}ms` } as React.CSSProperties}
+              >
+                {lead && (
+                  <>
+                    <div className="grid-texture-dark pointer-events-none absolute inset-0 opacity-60" aria-hidden />
+                    <div className="pointer-events-none absolute -end-16 -top-16 size-48 rounded-full bg-tech-600/40 blur-3xl" aria-hidden />
+                  </>
+                )}
+                <div className="relative flex items-center justify-between">
+                  <span className={cn("size-9 rounded-sm sm:size-12", lead ? "grid place-items-center bg-white/10 text-sky ring-1 ring-white/15" : "icon-tile")}>
+                    <Icon name={iconFor(s.icon, i)} className="size-4 sm:size-5" strokeWidth={1.75} />
+                  </span>
+                  <span className={cn("hidden font-mono text-xs sm:inline lg:hidden xl:inline", lead ? "text-white/40" : "text-mist")} dir="ltr">{String(i + 1).padStart(2, "0")}</span>
+                </div>
+                <div className="relative mt-4 flex flex-col-reverse sm:mt-8 lg:mt-0 xl:mt-auto xl:pt-10">
+                  <dt className={cn("mt-1.5 text-xs leading-snug font-medium sm:mt-2 sm:text-base", lead ? "text-white/75" : dark ? "text-white/70" : "text-body")}>{tr(s.label, locale, true)}</dt>
+                  <dd className={cn("display text-[1.55rem] leading-none sm:text-[2.6rem] xl:text-[3.25rem] rtl:font-[family-name:var(--font-cairo)]", lead || dark ? "text-gradient-sky" : "text-gradient-brand")}>
+                    <span dir="ltr"><CountUp value={s.value} /></span>
+                  </dd>
+                </div>
+                <span className={cn("relative mt-4 hidden h-px w-full sm:block lg:hidden xl:block", lead ? "bg-gradient-to-r from-sky/60 to-transparent rtl:bg-gradient-to-l" : "bg-gradient-to-r from-tech-600/40 to-transparent rtl:bg-gradient-to-l")} aria-hidden />
+              </div>
+            );
+          })}
         </dl>
       </div>
     </SectionShell>
@@ -247,49 +269,71 @@ export async function PartnersSection({ data, settings, ctx }: SectionProps<{ ey
   const featured = partners.find((p) => p.isStrategic && tr(p.description, locale));
   const featuredIdx = featured ? partners.indexOf(featured) : -1;
   const others = partners.filter((p) => p !== featured);
+  const tone = (t: string) => TONE[t as keyof typeof TONE] ?? TONE.light;
 
   return (
     <SectionShell settings={settings}>
       <div className="container-qe">
         <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} />
         {featured && (
-          <div className="mt-9 lg:mt-14 grid overflow-hidden border border-line bg-white shadow-soft lg:grid-cols-12" data-reveal>
-            <div className={cn("relative flex items-center justify-center p-8 lg:col-span-5 lg:p-14", TONE[featured.logoTone as keyof typeof TONE] ?? TONE.light)}>
-              <div className="absolute start-0 top-0 h-full w-1 bg-tech-600" aria-hidden />
-              {logos[featuredIdx] ? (
-                <MediaImage asset={logos[featuredIdx]} locale={locale} alt={tr(featured.name, locale, true)} sizes="(min-width:1024px) 30vw, 80vw" className="h-auto max-h-28 w-auto max-w-full object-contain" />
-              ) : (
-                <span className="display t-sub text-ink">{tr(featured.name, locale, true)}</span>
-              )}
+          <article className="card-premium group mt-9 grid lg:mt-14 lg:grid-cols-12" data-reveal>
+            <div className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-surface via-white to-sky-50 p-8 sm:p-12 lg:col-span-5">
+              <div className="grid-texture pointer-events-none absolute inset-0 opacity-60" aria-hidden />
+              <div className="pointer-events-none absolute end-5 top-5 grid grid-cols-3 gap-1" aria-hidden>
+                {Array.from({ length: 6 }, (_, k) => <span key={k} className={cn("size-2", k % 3 === 0 ? "bg-tech-600" : k % 2 ? "bg-sky/60" : "bg-navy/15")} />)}
+              </div>
+              <div className={cn("relative flex w-full max-w-sm items-center justify-center rounded-sm p-6 shadow-soft ring-1 ring-line transition-transform duration-700 group-hover:scale-[1.02] sm:p-8", tone(featured.logoTone))}>
+                {logos[featuredIdx] ? (
+                  <MediaImage asset={logos[featuredIdx]} locale={locale} alt={tr(featured.name, locale, true)} sizes="(min-width:1024px) 26vw, 80vw" className="h-auto max-h-24 w-auto max-w-full object-contain" />
+                ) : (
+                  <span className="display t-sub text-ink">{tr(featured.name, locale, true)}</span>
+                )}
+              </div>
             </div>
-            <div className="flex flex-col justify-center gap-4 p-6 sm:gap-5 sm:p-8 lg:col-span-7 lg:p-14">
-              <p className="text-xs font-semibold tracking-[0.16em] text-tech-600 uppercase rtl:text-sm rtl:tracking-normal">{dict.strategicPartner}</p>
-              <h3 className="heading text-2xl text-ink">{tr(featured.name, locale, true)}</h3>
+            <div className="flex flex-col justify-center gap-4 p-6 sm:p-10 lg:col-span-7 lg:p-12">
+              <span className="inline-flex items-center gap-2 self-start rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-tech-600 ring-1 ring-tech-600/15">
+                <Handshake className="size-3.5" aria-hidden />
+                {dict.strategicPartner}
+              </span>
+              <h3 className="heading t-title text-ink">{tr(featured.name, locale, true)}</h3>
               <p className="lede">{tr(featured.description, locale)}</p>
               {featured.url && (
-                <a href={featured.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 font-semibold text-tech-600 hover:text-tech-700">
+                <a href={featured.url} target="_blank" rel="noopener noreferrer" className="btn btn-outline mt-2 self-start !min-h-11">
                   {dict.visitWebsite}
                   <ArrowUpRight className="size-4" aria-hidden />
                 </a>
               )}
             </div>
-          </div>
+          </article>
         )}
         {others.length > 0 && (
-          <ul className={cn("mt-4 grid gap-3 sm:mt-6 sm:gap-4", others.length === 1 ? "grid-cols-1" : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4")}>
-            {others.map((p) => {
+          <ul className={cn("grid gap-3 sm:gap-4", featured ? "mt-4 sm:mt-5" : "mt-9 lg:mt-14", others.length === 1 ? "grid-cols-1 sm:max-w-lg" : others.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3")}>
+            {others.map((p, i) => {
               const idx = partners.indexOf(p);
-              const content = logos[idx] ? (
-                <MediaImage asset={logos[idx]} locale={locale} alt={tr(p.name, locale, true)} sizes="240px" className="h-auto max-h-20 w-auto max-w-[80%] object-contain" />
-              ) : (
-                <span className="heading text-lg text-ink">{tr(p.name, locale, true)}</span>
+              const desc = tr(p.description, locale);
+              const inner = (
+                <>
+                  <span className={cn("flex h-20 w-32 shrink-0 items-center justify-center rounded-sm p-3 ring-1 ring-line sm:h-24 sm:w-40", tone(p.logoTone))}>
+                    {logos[idx] ? (
+                      <MediaImage asset={logos[idx]} locale={locale} alt="" sizes="160px" className="h-auto max-h-14 w-auto max-w-full object-contain sm:max-h-16" />
+                    ) : (
+                      <span className="text-center text-sm font-semibold text-ink">{tr(p.name, locale, true)}</span>
+                    )}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="heading block t-card text-ink">{tr(p.name, locale, true)}</span>
+                    {desc ? <span className="mt-1 line-clamp-2 block text-sm leading-relaxed text-body">{desc}</span> : <span className="mt-1 block text-sm text-muted">{dict.partner}</span>}
+                  </span>
+                  {p.url && <ArrowUpRight className="size-4 shrink-0 text-muted transition-colors group-hover:text-tech-600" aria-hidden />}
+                </>
               );
+              const cls = "card-premium group flex h-full items-center gap-4 p-4 sm:gap-5 sm:p-5";
               return (
-                <li key={p.id} data-reveal>
+                <li key={p.id} data-reveal style={{ "--reveal-delay": `${(i % 3) * 80}ms` } as React.CSSProperties}>
                   {p.url ? (
-                    <a href={p.url} target="_blank" rel="noopener noreferrer" className={cn("flex h-28 items-center justify-center border border-line p-6 hover-lift sm:h-36", TONE[p.logoTone as keyof typeof TONE] ?? TONE.light)} aria-label={tr(p.name, locale, true)}>{content}</a>
+                    <a href={p.url} target="_blank" rel="noopener noreferrer" className={cls} aria-label={`${tr(p.name, locale, true)} — ${dict.visitWebsite}`}>{inner}</a>
                   ) : (
-                    <div className={cn("flex h-28 items-center justify-center border border-line p-6 sm:h-36", TONE[p.logoTone as keyof typeof TONE] ?? TONE.light)}>{content}</div>
+                    <div className={cls}>{inner}</div>
                   )}
                 </li>
               );

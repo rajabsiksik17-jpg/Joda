@@ -183,7 +183,7 @@ async function seedContent() {
   for (const p of PARTNERS) partnerLogos[p.logo] = (await uploadSeedAsset(p.logo, p.name)).id;
 
   // Statistics
-  for (const [i, s] of STATS.entries()) await db.stat.create({ data: { value: s.value, label: s.label, order: i } });
+  for (const [i, s] of STATS.entries()) await db.stat.create({ data: { value: s.value, label: s.label, icon: s.icon, order: i } });
 
   // Leadership
   const ceo = await db.teamMember.create({ data: { name: CEO.name, position: CEO.position, message: CEO.message, photoId: ceoPhoto.id, isLeadership: true, featured: true, order: 0 } });
@@ -503,6 +503,12 @@ async function upgradeContent() {
       await db.page.update({ where: { id: p.id }, data: { seo: next as Prisma.InputJsonValue, ...(nextSnap ? { publishedSnapshot: nextSnap as Prisma.InputJsonValue } : {}) } });
       changed++;
     }
+  }
+
+  // Icons for the official statistics, when an earlier seed created them without one.
+  for (const s of STATS) {
+    const r = await db.stat.updateMany({ where: { value: s.value, icon: null }, data: { icon: s.icon } });
+    changed += r.count;
   }
 
   if ((await db.blogPost.count()) === 0) {

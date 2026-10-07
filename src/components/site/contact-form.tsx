@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
-import { AlertCircle, ArrowRight, CheckCircle2, LoaderCircle } from "lucide-react";
+import { AlertCircle, ArrowRight, Building2, CheckCircle2, Layers, LoaderCircle, Mail, PenLine, Phone, User } from "lucide-react";
 import { submitContact, type ContactState } from "@/app/[locale]/contact-action";
 import { validateContact, type ContactErrorKey } from "@/lib/contact-rules";
 import type { Locale } from "@/lib/i18n/config";
@@ -68,10 +68,7 @@ export function ContactForm({ locale, token, services, defaultService = "", labe
     "aria-invalid": errors[name] ? true : undefined,
     "aria-describedby": errors[name] ? `cf-${name}-error` : undefined,
     onChange: () => clearError(name),
-    className: cn(
-      "w-full border bg-white px-4 text-ink transition-colors placeholder:text-muted/70 focus:outline-none focus:ring-2 focus:ring-tech/25",
-      errors[name] ? "border-red-600 focus:border-red-600" : "border-line-strong focus:border-tech",
-    ),
+    className: "field",
   });
   const err = (name: string) =>
     errors[name] ? (
@@ -81,14 +78,14 @@ export function ContactForm({ locale, token, services, defaultService = "", labe
       </p>
     ) : null;
   const label = (name: string, text: string, required = false) => (
-    <label htmlFor={`cf-${name}`} className="mb-2 block text-sm font-semibold text-ink">
+    <label htmlFor={`cf-${name}`} className="mb-2 block text-[0.9rem] font-semibold text-ink">
       {text}
       {required && <span className="text-tech-600" aria-hidden> *</span>}
     </label>
   );
 
   return (
-    <form key={formKey} ref={formRef} action={action} onSubmit={validate} noValidate className="grid gap-5 sm:grid-cols-2">
+    <form key={formKey} ref={formRef} action={action} onSubmit={validate} noValidate className="grid gap-x-5 gap-y-5 sm:grid-cols-2 sm:gap-y-6">
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="token" value={token} />
       {/* Honeypot — hidden from people and assistive technology. Clipped in place (an off-screen
@@ -107,42 +104,42 @@ export function ContactForm({ locale, token, services, defaultService = "", labe
 
       <div>
         {label("name", labels.name, true)}
-        <input {...field("name")} type="text" autoComplete="name" required maxLength={120} className={cn(field("name").className, "h-12")} />
+        <div className="field-wrap"><User className="field-icon" aria-hidden /><input {...field("name")} type="text" autoComplete="name" required maxLength={120} /></div>
         {err("name")}
       </div>
       <div>
         {label("email", labels.email, true)}
-        <input {...field("email")} type="email" autoComplete="email" required maxLength={200} dir="ltr" className={cn(field("email").className, "h-12 rtl:text-right")} />
+        <div className="field-wrap"><Mail className="field-icon" aria-hidden /><input {...field("email")} type="email" autoComplete="email" required maxLength={200} dir="ltr" className="field rtl:text-right" /></div>
         {err("email")}
       </div>
       <div>
         {label("phone", labels.phone)}
-        <input {...field("phone")} type="tel" autoComplete="tel" maxLength={40} dir="ltr" className={cn(field("phone").className, "h-12 rtl:text-right")} />
+        <div className="field-wrap"><Phone className="field-icon" aria-hidden /><input {...field("phone")} type="tel" inputMode="tel" autoComplete="tel" maxLength={40} dir="ltr" className="field rtl:text-right" /></div>
         {err("phone")}
       </div>
       <div>
         {label("company", labels.company)}
-        <input {...field("company")} type="text" autoComplete="organization" maxLength={160} className={cn(field("company").className, "h-12")} />
+        <div className="field-wrap"><Building2 className="field-icon" aria-hidden /><input {...field("company")} type="text" autoComplete="organization" maxLength={160} /></div>
         {err("company")}
       </div>
       {services.length > 0 && (
         <div className="sm:col-span-2">
           {label("service", labels.service)}
-          <select {...field("service")} defaultValue={defaultService} className={cn(field("service").className, "h-12")}>
+          <div className="field-wrap"><Layers className="field-icon" aria-hidden /><select {...field("service")} defaultValue={defaultService}>
             <option value="">{labels.servicePlaceholder}</option>
             {services.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
+          </select></div>
           {err("service")}
         </div>
       )}
       <div className="sm:col-span-2">
         {label("subject", labels.subject)}
-        <input {...field("subject")} type="text" maxLength={200} className={cn(field("subject").className, "h-12")} />
+        <div className="field-wrap"><PenLine className="field-icon" aria-hidden /><input {...field("subject")} type="text" maxLength={200} /></div>
         {err("subject")}
       </div>
       <div className="sm:col-span-2">
         {label("message", labels.message, true)}
-        <textarea {...field("message")} required rows={6} maxLength={5000} className={cn(field("message").className, "resize-y py-3")} />
+        <textarea {...field("message")} required rows={6} maxLength={5000} />
         {err("message")}
       </div>
       <div className="sm:col-span-2">
@@ -156,7 +153,7 @@ export function ContactForm({ locale, token, services, defaultService = "", labe
         {err("consent")}
       </div>
       <div className="sm:col-span-2">
-        <button type="submit" disabled={pending} className="btn btn-primary w-full disabled:cursor-wait disabled:opacity-80 sm:w-auto">
+        <button type="submit" disabled={pending} className="btn btn-primary w-full disabled:cursor-wait disabled:opacity-80 sm:w-auto sm:min-w-56">
           {pending ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : null}
           {pending ? labels.sending : labels.submit}
           {!pending && <ArrowRight className="btn-arrow size-4" aria-hidden />}

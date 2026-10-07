@@ -153,21 +153,23 @@ export function CardsSection({ data, settings, ctx }: SectionProps<CardsData>) {
     <SectionShell settings={settings}>
       <div className="container-qe">
         <SectionHeading eyebrow={data.eyebrow} title={data.title} text={data.text} locale={locale} />
-        <div className={cn("mt-9 lg:mt-14 grid gap-px", compact && "max-md:grid-cols-2 max-md:gap-3", cols, data.style === "outline" ? (dark ? "bg-white/10" : "bg-line") : "gap-5 bg-transparent")}>
+        <div className={cn("mt-9 lg:mt-14 grid gap-px", compact && "max-md:grid-cols-2 max-md:gap-2.5", cols, data.style === "outline" ? (dark ? "bg-white/10" : "bg-line") : "gap-4 bg-transparent lg:gap-5")}>
           {items.map((item, i) => {
             const href = item.link?.href;
             const inner = (
               <>
                 {data.style === "numbered" ? (
                   <>
-                    <span className="absolute inset-x-0 top-0 h-0.5 scale-x-0 bg-tech-600 transition-transform duration-500 group-hover:scale-x-100 rtl:origin-right ltr:origin-left" aria-hidden />
-                    <span className="flex items-start justify-between gap-4">
-                      {item.icon ? (
-                        <span className={cn("grid size-10 place-items-center rounded-full transition-colors duration-300 sm:size-12", dark ? "bg-white/10 text-sky" : "bg-sky-50 text-tech-600 group-hover:bg-tech-600 group-hover:text-white")}>
-                          <Icon name={item.icon} className="size-5" />
+                    {/* Large watermark number and a soft corner glow give each value its own presence. */}
+                    <span className={cn("pointer-events-none absolute end-4 top-3 font-[family-name:var(--font-inter)] text-[3.25rem] leading-none font-extrabold tracking-tighter select-none sm:end-6 sm:top-5 sm:text-[5rem]", dark ? "text-white/[0.05]" : "text-navy/[0.06]")} aria-hidden>{String(i + 1).padStart(2, "0")}</span>
+                    <span className="pointer-events-none absolute -bottom-20 -start-20 size-44 rounded-full bg-sky/10 opacity-0 blur-2xl transition-opacity duration-700 group-hover:opacity-100" aria-hidden />
+                    <span className="relative flex items-center gap-3">
+                      {item.icon && (
+                        <span className={cn("size-11 rounded-sm sm:size-14", dark ? "grid place-items-center bg-white/10 text-sky ring-1 ring-white/15" : "icon-tile")}>
+                          <Icon name={item.icon} className="size-5 sm:size-6" strokeWidth={1.75} />
                         </span>
-                      ) : <span />}
-                      <span className={cn("display text-2xl leading-none sm:text-4xl", dark ? "text-white/25" : "text-navy/15")} dir="ltr">{String(i + 1).padStart(2, "0")}</span>
+                      )}
+                      <span className={cn("hidden font-mono text-xs sm:inline", dark ? "text-sky/80" : "text-tech-600")} dir="ltr">{String(i + 1).padStart(2, "0")} —</span>
                     </span>
                   </>
                 ) : (
@@ -175,8 +177,9 @@ export function CardsSection({ data, settings, ctx }: SectionProps<CardsData>) {
                     <Icon name={item.icon} className="size-6" />
                   </span>
                 )}
-                <h3 className={cn("heading t-card", compact ? "mt-4 sm:mt-6" : "mt-6")}>{tr(item.title, locale)}</h3>
-                {tr(item.text, locale) && <p className={cn("leading-relaxed", compact ? "mt-1.5 text-sm sm:mt-3 sm:text-base" : "mt-3", dark ? "text-white/70" : "text-body")}>{tr(item.text, locale)}</p>}
+                <h3 className={cn("heading relative t-card", compact ? "mt-4 sm:mt-7" : "mt-6", data.style === "numbered" && "sm:text-[1.3rem]")}>{tr(item.title, locale)}</h3>
+                {tr(item.text, locale) && <p className={cn("relative leading-relaxed", compact ? "mt-1.5 text-sm sm:mt-2.5 sm:text-base" : "mt-3", dark ? "text-white/70" : "text-body")}>{tr(item.text, locale)}</p>}
+                {data.style === "numbered" && <span className={cn("relative mt-auto hidden pt-6 sm:block")} aria-hidden><span className={cn("block h-px w-10 transition-all duration-500 group-hover:w-20", dark ? "bg-sky/60" : "bg-tech-600/60")} /></span>}
                 {href && tr(item.link?.label, locale) && (
                   <span className="mt-6 inline-flex items-center gap-2 font-semibold text-tech-600">
                     {tr(item.link?.label, locale)}
@@ -191,7 +194,7 @@ export function CardsSection({ data, settings, ctx }: SectionProps<CardsData>) {
               data.style === "filled"
                 ? dark ? "bg-white/5 hover:bg-white/10" : "bg-surface hover:bg-surface-2"
                 : data.style === "numbered"
-                  ? cn("overflow-hidden border duration-300 hover:-translate-y-1 hover:shadow-lift", dark ? "border-white/15 bg-white/5" : "border-line bg-white")
+                  ? cn("card-premium", dark && "!border-white/10 !bg-white/[0.04]")
                   : dark ? "bg-navy hover:bg-navy-800" : "bg-white hover:bg-sky-50/60",
             );
             return (

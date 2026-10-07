@@ -75,7 +75,7 @@ export const getServiceCategories = unstable_cache(
 );
 
 export const getStats = unstable_cache(
-  async () => (await db.stat.findMany({ where: { visible: true }, orderBy: { order: "asc" } })).map((s) => ({ id: s.id, value: s.value, label: s.label as L })),
+  async () => (await db.stat.findMany({ where: { visible: true }, orderBy: { order: "asc" } })).map((s) => ({ id: s.id, value: s.value, label: s.label as L, icon: s.icon })),
   ["stats"],
   { tags: [CONTENT_TAG] },
 );

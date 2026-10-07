@@ -163,6 +163,7 @@ export const COLLECTIONS: Record<CollectionKey, CollectionConfig> = {
     fields: [
       { type: "text", name: "value", label: bi("Value (e.g. 10 or +100)", "القيمة (مثل 10 أو ‎+100)"), localized: false, required: true, max: 20, width: "half" },
       { type: "text", name: "label", label: bi("Label", "الوصف"), required: true, max: 80 },
+      { type: "icon", name: "icon", label: bi("Icon", "الأيقونة") },
     ],
   },
   serviceCategories: {

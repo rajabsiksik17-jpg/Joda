@@ -52,9 +52,9 @@ export const PARTNERS = [
 ];
 
 export const STATS = [
-  { value: "4", label: l("Countries served", "دول نخدمها") },
-  { value: "10", label: l("Core services", "خدمات رئيسية") },
-  { value: "+100", label: l("Corporate clients", "عميل مؤسسي") },
+  { value: "4", label: l("Countries served", "دول نخدمها"), icon: "globe" },
+  { value: "10", label: l("Core services", "خدمات رئيسية"), icon: "layers" },
+  { value: "+100", label: l("Corporate clients", "عميل مؤسسي"), icon: "building" },
 ];
 
 export const MARKETS = [l("Jordan", "الأردن"), l("The Gulf", "الخليج العربي"), l("Palestine", "فلسطين"), l("Sudan", "السودان")];

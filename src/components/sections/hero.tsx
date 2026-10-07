@@ -3,6 +3,7 @@ import { getStats } from "@/lib/content/collections";
 import { getMedia } from "@/lib/media";
 import { cn } from "@/lib/cn";
 import { CountUp } from "../site/count-up";
+import { Icon } from "@/lib/icons";
 import { MediaImage } from "../site/media-image";
 import { NetworkGlobe } from "../site/network-globe";
 import { CtaLink } from "../site/primitives";
@@ -44,14 +45,24 @@ export async function HeroSection({ data, settings, ctx }: SectionProps<HeroData
   );
 
   const statsBar = stats.length > 0 && (
-    <div className="relative z-10 mt-16 border-t border-white/15 lg:mt-24">
-      <dl className="grid grid-cols-3 divide-x divide-white/10 rtl:divide-x-reverse">
-        {stats.map((s, i) => (
-          <div key={s.id} className={cn("flex flex-col-reverse py-6 animate-fade-up sm:py-8", i === 0 ? "pe-4" : "px-4 sm:px-8")} style={{ animationDelay: `${320 + i * 80}ms` }}>
-            <dt className="mt-1 text-sm text-white/60 sm:text-base">{tr(s.label, locale, true)}</dt>
-            <dd className="display t-section text-white rtl:font-[family-name:var(--font-cairo)]">
-              <CountUp value={s.value} />
-            </dd>
+    <div className="relative z-10 mt-12 sm:mt-16 lg:mt-20">
+      <dl className={cn("grid overflow-hidden rounded-sm border border-white/10 bg-white/[0.04] shadow-[0_30px_60px_-40px_rgba(0,0,0,0.6)] backdrop-blur-md", stats.length >= 3 ? "grid-cols-3" : "grid-cols-2")}>
+        {stats.slice(0, 4).map((s, i) => (
+          <div
+            key={s.id}
+            className="group relative flex flex-col items-center gap-2.5 border-white/10 px-2 py-5 text-center transition-colors duration-500 not-first:border-s hover:bg-white/[0.05] sm:flex-row sm:gap-4 sm:px-6 sm:py-6 sm:text-start lg:px-8 animate-fade-up"
+            style={{ animationDelay: `${320 + i * 90}ms` }}
+          >
+            <span className="absolute inset-x-6 top-0 h-px origin-center scale-x-0 bg-gradient-to-r from-transparent via-sky to-transparent transition-transform duration-700 group-hover:scale-x-100" aria-hidden />
+            <span className="grid size-9 shrink-0 place-items-center rounded-sm bg-white/[0.07] text-sky ring-1 ring-white/10 transition-colors duration-500 group-hover:bg-tech-600 group-hover:text-white sm:size-12">
+              <Icon name={s.icon || ["globe", "layers", "building", "award"][i]} className="size-4 sm:size-5" strokeWidth={1.75} />
+            </span>
+            <div className="flex min-w-0 flex-col-reverse">
+              <dt className="mt-1 text-xs leading-snug text-white/65 sm:text-sm">{tr(s.label, locale, true)}</dt>
+              <dd className="display text-gradient-sky text-[1.65rem] leading-none sm:text-[2.2rem] lg:text-[2.6rem] rtl:font-[family-name:var(--font-cairo)]">
+                <span dir="ltr"><CountUp value={s.value} /></span>
+              </dd>
+            </div>
           </div>
         ))}
       </dl>
